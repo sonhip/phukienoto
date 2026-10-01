@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title><%= title %></title>
+  
+  <!-- Favicon Logo -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="shortcut icon" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/favicon.svg">
+
+  <!-- Primary Meta Tags -->
+  <meta name="title" content="<%= title %>">
+  <meta name="description" content="<%= typeof product !== 'undefined' && product.summary ? product.summary : 'SmartLifeHub - Hệ thống bán lẻ phụ kiện ô tô cao cấp giá tại kho. Camera 4K, Máy hút bụi 120W, Nước hoa Solar, Kẹp điện thoại cảm ứng. Mua trực tiếp rẻ hơn sàn 10-15%, giao hỏa tốc.' %>">
+  <meta name="keywords" content="phụ kiện ô tô, camera hành trình 4k, máy hút bụi ô tô, kẹp điện thoại ô tô, nước hoa ô tô solar, mua phụ kiện ô tô giá kho, smartlifehub">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#ea580c">
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="<%= typeof baseUrl !== 'undefined' ? baseUrl + currentPath : 'http://localhost:3000' %>">
+
+  <!-- Open Graph / Facebook / Zalo -->
+  <meta property="og:type" content="<%= typeof product !== 'undefined' ? 'product' : 'website' %>">
+  <meta property="og:url" content="<%= typeof baseUrl !== 'undefined' ? baseUrl + currentPath : 'http://localhost:3000' %>">
+  <meta property="og:title" content="<%= title %>">
+  <meta property="og:description" content="<%= typeof product !== 'undefined' && product.summary ? product.summary : 'SmartLifeHub - Phụ kiện ô tô chính hãng, giá kho direct, hỗ trợ 1-1, giao hàng toàn quốc.' %>">
+  <meta property="og:image" content="<%= typeof product !== 'undefined' && product.images && product.images[0] ? (product.images[0].startsWith('http') ? product.images[0] : baseUrl + product.images[0]) : baseUrl + '/images/products/camera-4k-1.jpg' %>">
+  <meta property="og:site_name" content="SmartLifeHub Phụ Kiện Ô Tô">
+  <meta property="og:locale" content="vi_VN">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= title %>">
+  <meta name="twitter:description" content="<%= typeof product !== 'undefined' && product.summary ? product.summary : 'SmartLifeHub - Phụ kiện ô tô chính hãng giá tại kho' %>">
+  <meta name="twitter:image" content="<%= typeof product !== 'undefined' && product.images && product.images[0] ? (product.images[0].startsWith('http') ? product.images[0] : baseUrl + product.images[0]) : baseUrl + '/images/products/camera-4k-1.jpg' %>">
+
+  <!-- JSON-LD Structured Data Schema.org -->
+  <% if (typeof product !== 'undefined' && product.name) { %>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": <%- JSON.stringify(product.name) %>,
+    "image": <%- JSON.stringify(product.images && product.images[0] ? (product.images[0].startsWith('http') ? product.images[0] : baseUrl + product.images[0]) : '') %>,
+    "description": <%- JSON.stringify(product.summary || product.name) %>,
+    "sku": <%- JSON.stringify("SLH-" + product.id) %>,
+    "brand": {
+      "@type": "Brand",
+      "name": "SmartLifeHub"
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": <%- JSON.stringify(baseUrl + currentPath) %>,
+      "priceCurrency": "VND",
+      "price": <%- product.sale_price %>,
+      "availability": "https://schema.org/InStock",
+      "itemCondition": "https://schema.org/NewCondition"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "<%= product.rating || 4.9 %>",
+      "reviewCount": "<%= product.rating_count || 120 %>"
+    }
+  }
+  </script>
+  <% } else { %>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "SmartLifeHub",
+    "url": <%- JSON.stringify(baseUrl || "http://localhost:3000") %>,
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": <%- JSON.stringify((baseUrl || "http://localhost:3000") + "/tracking?phone={search_term_string}") %>,
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+  <% } %>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    html {
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+      max-width: 100%;
+    }
+    body {
+      overflow-x: hidden;
+      max-width: 100%;
+    }
+    * {
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .gradient-hero { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%); }
+    .gradient-cta {
+      background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    /* Shimmer effect for primary CTA buttons */
+    .gradient-cta::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(60deg, transparent 30%, rgba(255,255,255,0.25) 50%, transparent 70%);
+      transform: rotate(30deg);
+      animation: shimmer 4s infinite;
+      pointer-events: none;
+    }
+    @keyframes shimmer {
+      0% { transform: translateX(-100%) rotate(30deg); }
+      20% { transform: translateX(100%) rotate(30deg); }
+      100% { transform: translateX(100%) rotate(30deg); }
+    }
+
+    .gradient-trust { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
+    
+    /* Smooth Card Hover & Micro-interactions */
+    .card-hover {
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-8px) scale(1.015);
+      box-shadow: 0 22px 45px -10px rgba(234, 88, 12, 0.18);
+    }
+
+    /* Scroll reveal animations */
+    .reveal-on-scroll {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: opacity, transform;
+    }
+    .reveal-on-scroll.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Floating & Pulse animations */
+    .badge-pulse { animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.85; }
+    }
+
+    .float-slow {
+      animation: floatSmooth 4s ease-in-out infinite;
+    }
+    @keyframes floatSmooth {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+
+    /* Smooth Image Fade Switcher */
+    .img-fade-switch {
+      transition: opacity 0.3s ease-in-out, transform 0.3s ease;
+    }
+
+    .price-slash { text-decoration: line-through; }
+    .toast { animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1), fadeOut 0.4s ease 2.6s; }
+    @keyframes slideIn { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+    /* Button active scale */
+    button:active, a.btn-active:active {
+      transform: scale(0.96) !important;
+      transition: transform 0.1s ease;
+    }
+
+    /* Touch target optimization for mobile */
+    @media (max-width: 640px) {
+      button, a { min-height: 44px; }
+    }
+    /* Vertical video / TikTok-like container */
+    .vertical-scroll {
+      display: flex;
+      gap: 1rem;
+      align-items: stretch;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      padding: 0.25rem 0.2rem 0.7rem;
+      width: 100%;
+      max-width: 100%;
+      scrollbar-width: thin;
+    }
+    .vertical-scroll::-webkit-scrollbar {
+      height: 6px;
+    }
+    .vertical-scroll::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.8);
+      border-radius: 999px;
+    }
+    .vertical-video-item {
+      flex: 0 0 78%;
+      max-width: 320px;
+      scroll-snap-align: start;
+      border-radius: 1.15rem;
+      overflow: hidden;
+      background: #000;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    }
+    .vertical-video-item > div {
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+      aspect-ratio: 9 / 16;
+      background: #000;
+    }
+    .vertical-video-item video,
+    .vertical-video-item iframe,
+    .reel-video-frame video,
+    .reel-video-frame iframe {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      background: #000;
+      border: 0;
+    }
+    .reel-video-frame {
+      width: min(100%, 280px);
+      max-width: 100%;
+      aspect-ratio: 9 / 16;
+      overflow: hidden;
+      border-radius: 1rem;
+      background: #000;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+      margin-inline: auto;
+    }
+    .gallery-media,
+    .thumb-row,
+    .thumb-btn,
+    .gallery-media img {
+      max-width: 100%;
+    }
+    .gallery-media {
+      min-width: 0;
+    }
+    .thumb-btn img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    @media (min-width: 768px) {
+      .vertical-video-item {
+        flex-basis: 300px;
+        max-width: 300px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .vertical-video-item,
+      .reel-video-frame {
+        border-radius: 0.9rem;
+      }
+      .reel-video-frame {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 scroll-smooth min-h-screen flex flex-col">
+  <!-- Top Announcement Bar -->
+  <div class="bg-gradient-to-r from-orange-600 to-red-600 text-white text-center py-2 px-4 text-xs md:text-sm font-semibold">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <span class="hidden lg:inline"><i class="fas fa-shield-alt mr-1"></i> MIỄN PHÍ GIAO HÀNG TOÀN QUỐC • ĐỔI TRẢ 30 NGÀY MIỄN PHÍ</span>
+      <span class="mx-auto sm:mx-0"><i class="fas fa-fire mr-1 text-yellow-300"></i> MUA TRỰC TIẾP TẠI WEB - TIẾT KIỆM TỚI 35% PHÍ SÀN • HỖ TRỢ 1-1 QUA ZALO</span>
+      <a href="https://zalo.me/0838709126" target="_blank" class="hidden sm:inline hover:underline font-bold text-yellow-200">
+        <i class="fas fa-comment-dots mr-1"></i> Zalo: 0838.709.126
+      </a>
+    </div>
+  </div>
+
+  <!-- Main Navigation Header -->
+  <header class="bg-white shadow-sm sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center shadow-md">
+          <i class="fas fa-car text-white text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-black text-gray-900 leading-none tracking-tight">SmartLifeHub</h1>
+          <p class="text-[11px] font-medium text-orange-600 tracking-wide uppercase">Phụ Kiện Ô Tô Giá Tại Kho</p>
+        </div>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-gray-700">
+        <a href="/" class="hover:text-orange-600 transition">Trang Chủ</a>
+        <a href="/#products" class="hover:text-orange-600 transition">Sản Phẩm HOT</a>
+        <a href="/#benefits" class="hover:text-orange-600 transition">Quyền Lợi Khách Hàng</a>
+        <a href="/tracking" class="hover:text-orange-600 transition">Tra Cứu Đơn Hàng</a>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <a href="/tracking" class="text-gray-600 hover:text-orange-600 p-2 md:hidden" title="Tra cứu đơn">
+          <i class="fas fa-search text-lg"></i>
+        </a>
+        <a href="/cart" class="relative text-gray-700 hover:text-orange-600 p-2 transition flex items-center gap-2">
+          <div class="relative">
+            <i class="fas fa-shopping-bag text-2xl"></i>
+            <% if (typeof cartCount !== 'undefined' && cartCount > 0) { %>
+            <span id="cart-badge" class="absolute -top-2 -right-2 bg-red-600 text-white text-[11px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow badge-pulse"><%= cartCount %></span>
+            <% } else { %>
+            <span id="cart-badge" class="absolute -top-2 -right-2 bg-red-600 text-white text-[11px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow hidden">0</span>
+            <% } %>
+          </div>
+          <span class="hidden sm:inline font-semibold text-sm">Giỏ Hàng</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast message -->
+  <div id="toast" class="fixed top-20 right-4 z-50 hidden">
+    <div class="bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-3 toast">
+      <i class="fas fa-check-circle text-xl"></i>
+      <span id="toast-message" class="font-medium text-sm">Đã thêm vào giỏ hàng!</span>
+    </div>
+  </div>

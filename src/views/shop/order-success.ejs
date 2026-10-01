@@ -1,0 +1,253 @@
+<%- include('../partials/header') %>
+
+<div class="bg-gray-50 py-10 min-h-screen">
+  <div class="max-w-4xl mx-auto px-4">
+    
+    <% if (typeof switched !== 'undefined' && switched) { %>
+    <!-- Switched to COD Alert -->
+    <div class="mb-6 bg-emerald-50 border-2 border-emerald-400 p-4 rounded-2xl text-left flex items-center justify-between gap-3 shadow-sm">
+      <div class="flex items-center gap-3">
+        <i class="fas fa-check-circle text-emerald-600 text-2xl"></i>
+        <div>
+          <h4 class="font-bold text-emerald-900 text-sm">✅ ĐÃ CHUYỂN SANG THANH TOÁN KHI NHẬN HÀNG (COD)</h4>
+          <p class="text-xs text-emerald-800">
+            Shop đã cập nhật hình thức thanh toán của bạn sang COD. Bạn sẽ thanh toán trực tiếp cho shipper khi nhận hàng!
+          </p>
+        </div>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Success Header -->
+    <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-200 text-center mb-8">
+      <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+        <i class="fas fa-check"></i>
+      </div>
+      <h1 class="text-2xl font-black text-gray-900 mb-2">ĐẶT HÀNG THÀNH CÔNG!</h1>
+      <p class="text-sm text-gray-600">Cảm ơn bạn đã tin tưởng lựa chọn SmartLifeHub. Mã đơn hàng của bạn là:</p>
+      <div class="inline-block bg-gray-100 border border-gray-300 font-black text-xl text-orange-600 px-6 py-2 rounded-xl mt-3 tracking-widest select-all">
+        <%= order.order_code %>
+      </div>
+
+      <% if (order.payment_method === 'BANK_TRANSFER') { %>
+      <!-- 15-Minute Reservation Countdown Timer Banner -->
+      <div class="mt-6 bg-amber-50 border-2 border-amber-400 p-4 rounded-2xl max-w-xl mx-auto text-left flex items-start gap-3 shadow-sm">
+        <i class="fas fa-hourglass-half text-amber-500 text-2xl mt-0.5 animate-pulse"></i>
+        <div class="w-full">
+          <div class="flex items-center justify-between flex-wrap gap-2 mb-1">
+            <h4 class="font-bold text-amber-900 text-sm">⚡ ĐƠN HÀNG ĐANG ĐƯỢC GIỮ HÀNG TRONG:</h4>
+            <span id="reservation-timer" class="bg-amber-600 text-white font-extrabold px-3 py-1 rounded-lg text-sm tracking-wider shadow-inner">
+              15:00
+            </span>
+          </div>
+          <p class="text-xs text-amber-800">
+            Vui lòng hoàn tất chuyển khoản trong thời gian trên để giữ ưu đãi. Hệ thống đang <strong>tự động kiểm tra giao dịch & lên đơn</strong> ngay khi nhận được tiền.
+          </p>
+        </div>
+      </div>
+      <% } %>
+    </div>
+
+    <!-- Bank Transfer QR Box (If BANK_TRANSFER) -->
+    <% if (order.payment_method === 'BANK_TRANSFER' && qrUrl) { %>
+    <div class="bg-white rounded-3xl p-8 shadow-sm border-2 border-orange-500 mb-8">
+      <div class="text-center max-w-lg mx-auto">
+        <span class="bg-orange-500 text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">
+          MÃ QR CHUYỂN KHOẢN TỰ ĐỘNG
+        </span>
+        <h2 class="text-xl font-bold text-gray-900 mt-3 mb-2">Quét Mã QR Để Hoàn Tất Thanh Toán</h2>
+        <p class="text-xs text-gray-500 mb-6">Mở app Ngân hàng (Vietcombank, MB, Techcombank, Momo,...) và quét mã bên dưới</p>
+
+        <!-- VietQR Image -->
+        <div class="bg-gray-50 p-4 rounded-2xl border border-gray-200 inline-block mb-4 shadow-inner relative group">
+          <img id="qr-img" src="<%= qrUrl %>" alt="Mã QR Thanh Toán" class="w-64 h-64 mx-auto rounded-xl">
+        </div>
+
+        <!-- Quick Assistance Actions (Download QR, Switch to COD, Zalo Help) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          <a href="<%= qrUrl %>" download="QR-SmartLifeHub-<%= order.order_code %>.png" target="_blank"
+             class="bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition">
+            <i class="fas fa-download text-sm"></i> Tải Ảnh QR Về Máy
+          </a>
+          <a href="https://zalo.me/0838709126?text=Tôi%20cần%20xác%20nhận%20chuyển%20khoản%20cho%20đơn%20hàng%20<%= order.order_code %>" target="_blank"
+             class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition">
+            <i class="fas fa-comments text-sm"></i> Gửi Bill Qua Zalo
+          </a>
+        </div>
+
+        <!-- Switch to COD Button -->
+        <div class="bg-orange-50 border border-orange-200 rounded-2xl p-4 text-center">
+          <p class="text-xs text-orange-900 mb-2 font-semibold">Gặp sự cố khi chuyển khoản hoặc chưa thể thanh toán ngay?</p>
+          <form action="/order/switch-to-cod/<%= order.order_code %>" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn chuyển sang Thanh toán khi nhận hàng (COD)?')">
+            <button type="submit" class="w-full bg-white text-orange-600 hover:bg-orange-600 hover:text-white border-2 border-orange-500 font-bold py-2.5 px-4 rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-2">
+              <i class="fas fa-truck text-sm"></i> Đổi Sang Thanh Toán Khi Nhận Hàng (COD)
+            </button>
+          </form>
+        </div>
+
+        <!-- Transfer Info Details & Copy Buttons -->
+        <div class="bg-gray-50 p-4 rounded-2xl border border-gray-200 text-left text-xs space-y-3 mt-6">
+          <div class="flex justify-between items-center pb-2 border-b border-gray-200">
+            <span class="text-gray-500">Ngân hàng:</span>
+            <strong class="text-gray-900 font-bold"><%= bankName || 'VPBank' %></strong>
+          </div>
+          <div class="flex justify-between items-center pb-2 border-b border-gray-200">
+            <span class="text-gray-500">Số tài khoản:</span>
+            <div class="flex items-center gap-2">
+              <strong id="stk-val" class="text-gray-900 font-bold"><%= bankAccount || '14220968' %></strong>
+              <button onclick="copyText('<%= bankAccount || '14220968' %>', 'Đã chép STK!')" class="bg-orange-100 text-orange-700 px-2 py-0.5 rounded font-semibold text-[10px] hover:bg-orange-200">Chép</button>
+            </div>
+          </div>
+          <div class="flex justify-between items-center pb-2 border-b border-gray-200">
+            <span class="text-gray-500">Chủ tài khoản:</span>
+            <strong class="text-gray-900 font-bold uppercase"><%= bankOwner || 'TRAN VAN SON' %></strong>
+          </div>
+          <div class="flex justify-between items-center pb-2 border-b border-gray-200">
+            <span class="text-gray-500">Số tiền:</span>
+            <div class="flex items-center gap-2">
+              <strong class="text-red-600 font-extrabold text-sm"><%= formatCurrency(order.total_amount) %></strong>
+              <button onclick="copyText('<%= order.total_amount %>', 'Đã chép số tiền!')" class="bg-orange-100 text-orange-700 px-2 py-0.5 rounded font-semibold text-[10px] hover:bg-orange-200">Chép</button>
+            </div>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-gray-500">Nội dung CK:</span>
+            <div class="flex items-center gap-2">
+              <strong class="text-orange-600 font-bold"><%= order.transfer_content %></strong>
+              <button onclick="copyText('<%= order.transfer_content %>', 'Đã chép nội dung!')" class="bg-orange-100 text-orange-700 px-2 py-0.5 rounded font-semibold text-[10px] hover:bg-orange-200">Chép</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Order Timeline Status Tracker -->
+    <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-200 mb-8">
+      <h3 class="font-bold text-gray-900 text-base mb-6 flex items-center gap-2">
+        <i class="fas fa-truck text-orange-500"></i> Tiến Độ Đơn Hàng
+      </h3>
+
+      <div class="relative flex justify-between items-center text-xs">
+        <div class="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-gray-200 -z-0"></div>
+        
+        <!-- Step 1 -->
+        <div class="relative z-10 text-center bg-white px-2">
+          <div class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto mb-1 font-bold">
+            <i class="fas fa-check"></i>
+          </div>
+          <span class="font-semibold text-gray-800">Đặt hàng</span>
+        </div>
+
+        <!-- Step 2 -->
+        <% const isStep2Done = ['CONFIRMED', 'SHIPPING', 'DELIVERED'].includes(order.order_status); %>
+        <div class="relative z-10 text-center bg-white px-2">
+          <div class="w-8 h-8 rounded-full <%= isStep2Done ? 'bg-emerald-500 text-white' : (order.is_priority ? 'bg-amber-500 text-white badge-pulse' : 'bg-blue-500 text-white') %> flex items-center justify-center mx-auto mb-1 font-bold">
+            <i class="fas <%= isStep2Done ? 'fa-check' : (order.is_priority ? 'fa-sync fa-spin' : 'fa-clock') %>"></i>
+          </div>
+          <span class="font-semibold text-gray-800">
+            <%= isStep2Done ? 'Đã duyệt & Lên đơn' : (order.is_priority ? 'Đang kiểm tra & Tự động lên đơn' : 'Chờ gọi xác nhận (COD)') %>
+          </span>
+        </div>
+
+        <!-- Step 3 -->
+        <% const isStep3Done = ['SHIPPING', 'DELIVERED'].includes(order.order_status); %>
+        <% const isStep3Active = order.order_status === 'CONFIRMED'; %>
+        <div class="relative z-10 text-center bg-white px-2">
+          <div class="w-8 h-8 rounded-full <%= isStep3Done ? 'bg-emerald-500 text-white' : (isStep3Active ? 'bg-purple-600 text-white badge-pulse' : 'bg-gray-200 text-gray-500') %> flex items-center justify-center mx-auto mb-1 font-bold">
+            <i class="fas <%= isStep3Done ? 'fa-check' : 'fa-box' %>"></i>
+          </div>
+          <span class="font-semibold <%= isStep3Done || isStep3Active ? 'text-gray-800' : 'text-gray-400' %>">
+            <%= isStep3Active ? 'Đang đóng gói' : (isStep3Done ? 'Đã đóng gói' : 'Đóng gói') %>
+          </span>
+        </div>
+
+        <!-- Step 4 -->
+        <% const isStep4Done = order.order_status === 'DELIVERED'; %>
+        <% const isStep4Active = order.order_status === 'SHIPPING'; %>
+        <div class="relative z-10 text-center bg-white px-2">
+          <div class="w-8 h-8 rounded-full <%= isStep4Done ? 'bg-emerald-500 text-white' : (isStep4Active ? 'bg-indigo-600 text-white badge-pulse' : 'bg-gray-200 text-gray-500') %> flex items-center justify-center mx-auto mb-1 font-bold">
+            <i class="fas <%= isStep4Done ? 'fa-check' : 'fa-shipping-fast' %>"></i>
+          </div>
+          <span class="font-semibold <%= isStep4Done || isStep4Active ? 'text-gray-800' : 'text-gray-400' %>">
+            <%= isStep4Active ? 'Đang giao hàng' : (isStep4Done ? 'Đã giao thành công' : 'Đang giao') %>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Items & Customer Info -->
+    <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-200">
+      <h3 class="font-bold text-gray-900 text-base mb-4 pb-3 border-b border-gray-100">Chi Tiết Đơn Hàng</h3>
+      
+      <div class="space-y-3 mb-6">
+        <% order.items.forEach(item => { %>
+        <div class="flex items-center justify-between text-xs">
+          <div class="flex items-center gap-3">
+            <img src="<%= item.image %>" alt="<%= item.name %>" class="w-10 h-10 rounded-lg object-cover bg-gray-100">
+            <div>
+              <span class="font-semibold text-gray-900"><%= item.name %></span>
+              <span class="text-gray-500 ml-2">x<%= item.quantity %></span>
+            </div>
+          </div>
+          <span class="font-bold text-gray-900"><%= formatCurrency(item.price * item.quantity) %></span>
+        </div>
+        <% }) %>
+      </div>
+
+      <div class="border-t border-gray-100 pt-4 grid md:grid-cols-2 gap-4 text-xs">
+        <div>
+          <span class="text-gray-500">Người nhận:</span>
+          <p class="font-bold text-gray-900 mt-0.5"><%= order.customer_name %> - <%= order.customer_phone %></p>
+        </div>
+        <div>
+          <span class="text-gray-500">Địa chỉ giao:</span>
+          <p class="font-bold text-gray-900 mt-0.5"><%= order.customer_address %></p>
+        </div>
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-gray-100 flex flex-wrap gap-4 justify-between items-center">
+        <a href="/tracking?code=<%= order.order_code %>" class="bg-gray-100 text-gray-700 hover:bg-gray-200 font-semibold px-6 py-3 rounded-xl text-xs transition">
+          <i class="fas fa-search mr-1"></i> Tra Cứu Tình Trạng Đơn
+        </a>
+        <a href="/" class="gradient-cta text-white font-bold px-6 py-3 rounded-xl text-xs shadow hover:opacity-95 transition">
+          Tiếp Tục Mua Sắm
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function copyText(text, msg) {
+    navigator.clipboard.writeText(text);
+    showToast(msg);
+  }
+
+  // 15-minute Countdown Timer Script
+  (function() {
+    const timerEl = document.getElementById('reservation-timer');
+    if (!timerEl) return;
+
+    let timeLeft = 15 * 60; // 15 minutes in seconds
+
+    const updateTimer = () => {
+      const mins = Math.floor(timeLeft / 60);
+      const secs = timeLeft % 60;
+      timerEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      
+      if (timeLeft > 0) {
+        timeLeft--;
+      } else {
+        timerEl.textContent = "Hết giờ giữ chỗ";
+        timerEl.classList.remove('bg-amber-600');
+        timerEl.classList.add('bg-red-600');
+      }
+    };
+
+    updateTimer();
+    setInterval(updateTimer, 1000);
+  })();
+</script>
+
+<%- include('../partials/footer') %>

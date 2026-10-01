@@ -1,0 +1,22 @@
+<%- include('./partials/header') %>
+<div class="bg-gray-50 py-20 min-h-screen flex items-center justify-center">
+  <div class="text-center max-w-md px-4">
+    <div
+      class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"
+    >
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <h1 class="text-2xl font-bold text-gray-800 mb-2">Đã xảy ra lỗi!</h1>
+    <p class="text-gray-500 text-sm mb-6">
+      <%= typeof error !== 'undefined' ? error : 'Có lỗi trong quá trình xử lý.'
+      %>
+    </p>
+    <a
+      href="/"
+      class="gradient-cta text-white font-bold px-8 py-3 rounded-xl shadow inline-flex items-center gap-2"
+    >
+      <i class="fas fa-home"></i> Về Trang Chủ
+    </a>
+  </div>
+</div>
+<%- include('./partials/footer') %>

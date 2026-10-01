@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <style>
+      * {
+        font-family: "Inter", sans-serif;
+      }
+      .drop-zone-active {
+        border-color: #f97316 !important;
+        background-color: rgba(249, 115, 22, 0.05) !important;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 min-h-screen flex flex-col">
+    <!-- Top Admin Navbar -->
+    <header class="bg-gray-900 text-white sticky top-0 z-30 shadow-md">
+      <div
+        class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between"
+      >
+        <div class="flex items-center gap-6">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-9 h-9 bg-orange-500 rounded-xl flex items-center justify-center font-black"
+            >
+              <i class="fas fa-folder-open"></i>
+            </div>
+            <div>
+              <h1 class="text-base font-bold leading-none">
+                Media Drive Manager
+              </h1>
+              <p class="text-[10px] text-gray-400">
+                Quản Lý Thư Viện Ảnh & Video
+              </p>
+            </div>
+          </div>
+
+          <nav class="hidden md:flex items-center gap-2">
+            <a
+              href="/admin"
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-300 hover:bg-gray-800 hover:text-white transition"
+            >
+              <i class="fas fa-shopping-bag mr-1"></i> Xử Lý Đơn
+            </a>
+            <a
+              href="/admin/analytics"
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-300 hover:bg-gray-800 hover:text-white transition"
+            >
+              <i class="fas fa-chart-pie mr-1"></i> Báo Cáo Doanh Thu
+            </a>
+            <a
+              href="/admin/products"
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-300 hover:bg-gray-800 hover:text-white transition"
+            >
+              <i class="fas fa-box-open mr-1"></i> Quản Lý Sản Phẩm
+            </a>
+            <a
+              href="/admin/media"
+              class="px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-500 text-white"
+            >
+              <i class="fas fa-images mr-1"></i> Thư Viện Media
+            </a>
+          </nav>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <a
+            href="/"
+            target="_blank"
+            class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold px-3 py-2 rounded-lg transition"
+          >
+            <i class="fas fa-external-link-alt mr-1"></i> Xem Web
+          </a>
+          <a
+            href="/admin/logout"
+            class="text-xs bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-2 rounded-lg transition"
+          >
+            <i class="fas fa-sign-out-alt mr-1"></i> Đăng Xuất
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+      <!-- Top Action Toolbar -->
+      <div
+        class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 mb-6 flex flex-wrap items-center justify-between gap-4"
+      >
+        <!-- Breadcrumbs -->
+        <nav
+          id="breadcrumbs-container"
+          class="flex items-center gap-1.5 text-xs text-gray-600 font-medium flex-wrap"
+        >
+          <!-- Rendered dynamically -->
+        </nav>
+
+        <!-- Right Toolbar Controls -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Search Input -->
+          <div class="relative">
+            <i
+              class="fas fa-search absolute left-3 top-2.5 text-xs text-gray-400"
+            ></i>
+            <input
+              type="text"
+              id="search-input"
+              placeholder="Tìm tên file / thư mục..."
+              oninput="renderItems()"
+              class="pl-8 pr-3 py-1.5 border border-gray-300 rounded-xl text-xs focus:outline-none focus:border-orange-500 w-44 sm:w-56"
+            />
+          </div>
+
+          <!-- Create Folder Button -->
+          <button
+            onclick="promptCreateFolder()"
+            class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1.5"
+          >
+            <i class="fas fa-folder-plus text-amber-500"></i> Tạo Thư Mục
+          </button>
+
+          <!-- Upload Files Button -->
+          <label
+            class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-3.5 py-1.5 rounded-xl text-xs shadow transition cursor-pointer flex items-center gap-1.5"
+          >
+            <i class="fas fa-cloud-upload-alt"></i> Tải Lên Media
+            <input
+              type="file"
+              id="upload-file-input"
+              multiple
+              accept="image/*,video/*"
+              class="hidden"
+              onchange="handleUpload(this.files)"
+            />
+          </label>
+
+          <!-- View Mode Switcher -->
+          <div
+            class="flex items-center border border-gray-200 rounded-xl overflow-hidden bg-gray-50"
+          >
+            <button
+              id="view-grid-btn"
+              onclick="setViewMode('grid')"
+              class="px-2.5 py-1 text-xs font-bold bg-white text-orange-600 shadow-sm"
+            >
+              <i class="fas fa-th-large"></i>
+            </button>
+            <button
+              id="view-list-btn"
+              onclick="setViewMode('list')"
+              class="px-2.5 py-1 text-xs text-gray-500 hover:text-gray-900"
+            >
+              <i class="fas fa-list"></i>
+            </button>
+          </div>
+
+          <!-- Refresh Button -->
+          <button
+            onclick="loadMedia()"
+            class="p-1.5 text-gray-500 hover:text-orange-600 text-xs transition"
+            title="Làm mới"
+          >
+            <i class="fas fa-sync-alt"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Drag and Drop Dropzone -->
+      <div
+        id="drop-zone"
+        class="border-2 border-dashed border-gray-300 rounded-2xl p-6 mb-6 text-center transition bg-white/50"
+      >
+        <i
+          class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2 block"
+        ></i>
+        <p class="text-xs text-gray-600 font-semibold">
+          Kéo & Thả file ảnh/video vào đây để tải lên thư mục hiện tại
+        </p>
+        <p class="text-[10px] text-gray-400 mt-1">
+          Hỗ trợ JPG, PNG, WEBP, GIF, MP4, MOV, WEBM (Tối đa 100MB/file)
+        </p>
+      </div>
+
+      <!-- Multi-selection Bulk Action Floating Bar -->
+      <div
+        id="bulk-bar"
+        class="hidden sticky top-16 z-20 bg-gray-900 text-white px-5 py-3 rounded-2xl shadow-xl mb-6 flex items-center justify-between"
+      >
+        <span class="text-xs font-bold" id="bulk-count">Đã chọn 0 mục</span>
+        <div class="flex items-center gap-2">
+          <button
+            onclick="copySelectedUrls()"
+            class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition"
+          >
+            <i class="fas fa-copy mr-1"></i> Copy tất cả URL
+          </button>
+          <button
+            onclick="deleteSelectedItems()"
+            class="bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition"
+          >
+            <i class="fas fa-trash-alt mr-1"></i> Xóa mục chọn
+          </button>
+          <button
+            onclick="clearSelection()"
+            class="text-gray-400 hover:text-white text-xs px-2"
+          >
+            Hủy
+          </button>
+        </div>
+      </div>
+
+      <!-- Media Grid / List Container -->
+      <div id="media-content" class="min-h-[300px]">
+        <!-- Content populated by JS -->
+      </div>
+    </main>
+
+    <!-- Media Preview Lightbox Modal -->
+    <div
+      id="preview-modal"
+      class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-gray-900 rounded-3xl max-w-4xl w-full p-4 relative flex flex-col max-h-[90vh] shadow-2xl border border-gray-800"
+      >
+        <div
+          class="flex items-center justify-between pb-3 border-b border-gray-800 text-white"
+        >
+          <h3
+            id="preview-title"
+            class="text-xs font-bold truncate pr-4 text-gray-300"
+          >
+            Preview
+          </h3>
+          <div class="flex items-center gap-3">
+            <button
+              onclick="copyUrl(currentPreviewUrl)"
+              class="bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold px-3 py-1 rounded-lg transition flex items-center gap-1"
+            >
+              <i class="fas fa-copy"></i> Copy Link
+            </button>
+            <button
+              onclick="closePreviewModal()"
+              class="text-gray-400 hover:text-white text-base"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <div
+          class="flex-grow flex items-center justify-center p-4 overflow-hidden"
+          id="preview-body"
+        >
+          <!-- Image or Video element inserted here -->
+        </div>
+        <div
+          class="pt-2 text-center text-[11px] text-gray-400 font-mono select-all"
+          id="preview-url-text"
+        ></div>
+      </div>
+    </div>
+
+    <script>
+      let currentDir = "";
+      let mediaItems = [];
+      let selectedRelPaths = new Set();
+      let viewMode = "grid";
+      let currentPreviewUrl = "";
+
+      // Load directory contents
+      async function loadMedia(dir = currentDir) {
+        currentDir = dir;
+        selectedRelPaths.clear();
+        updateBulkBar();
+
+        const mediaContent = document.getElementById("media-content");
+        mediaContent.innerHTML = `<div class="py-12 text-center text-gray-400 text-sm"><i class="fas fa-spinner fa-spin mr-2"></i> Đang tải danh sách media...</div>`;
+
+        try {
+          const res = await fetch(
+            `/admin/api/media/list?dir=${encodeURIComponent(dir)}`,
+          );
+          const data = await res.json();
+          if (data.error) throw new Error(data.error);
+
+          currentDir = data.currentDir;
+          mediaItems = data.items || [];
+          renderBreadcrumbs(data.breadcrumbs || []);
+          renderItems();
+        } catch (err) {
+          mediaContent.innerHTML = `<div class="py-12 text-center text-red-500 text-sm font-bold"><i class="fas fa-exclamation-triangle mr-2"></i> ${err.message}</div>`;
+        }
+      }
+
+      // Render breadcrumbs
+      function renderBreadcrumbs(crumbs) {
+        const container = document.getElementById("breadcrumbs-container");
+        container.innerHTML = crumbs
+          .map((crumb, idx) => {
+            const isLast = idx === crumbs.length - 1;
+            if (isLast) {
+              return `<span class="font-bold text-gray-900"><i class="fas fa-folder-open text-orange-500 mr-1"></i> ${crumb.name}</span>`;
+            }
+            return `
+          <button onclick="loadMedia('${crumb.path}')" class="hover:text-orange-600 transition">
+            ${idx === 0 ? '<i class="fas fa-home mr-1"></i>' : ""}${crumb.name}
+          </button>
+          <span class="text-gray-300">/</span>
+        `;
+          })
+          .join("");
+      }
+
+      // Render files & folders grid/list
+      function renderItems() {
+        const search = (document.getElementById("search-input").value || "")
+          .toLowerCase()
+          .trim();
+        const filtered = mediaItems.filter((item) =>
+          item.name.toLowerCase().includes(search),
+        );
+        const container = document.getElementById("media-content");
+
+        if (filtered.length === 0) {
+          container.innerHTML = `
+          <div class="py-16 text-center text-gray-400 bg-white rounded-2xl border border-gray-200">
+            <i class="fas fa-folder-open text-4xl mb-3 text-gray-300 block"></i>
+            <p class="text-sm font-medium">Thư mục trống hoặc không tìm thấy file phù hợp</p>
+          </div>
+        `;
+          return;
+        }
+
+        if (viewMode === "grid") {
+          container.className =
+            "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4";
+          container.innerHTML = filtered
+            .map((item) => renderGridCard(item))
+            .join("");
+        } else {
+          container.className =
+            "bg-white rounded-2xl border border-gray-200 divide-y divide-gray-100 overflow-hidden";
+          container.innerHTML = `
+          <div class="px-4 py-2.5 bg-gray-50 text-[11px] font-bold text-gray-500 grid grid-cols-12 gap-2 uppercase tracking-wider">
+            <div class="col-span-6">Tên mục</div>
+            <div class="col-span-3">Dung lượng</div>
+            <div class="col-span-3 text-right">Thao tác</div>
+          </div>
+          ${filtered.map((item) => renderListRow(item)).join("")}
+        `;
+        }
+      }
+
+      // Grid card renderer
+      function renderGridCard(item) {
+        const isSelected = selectedRelPaths.has(item.relPath);
+
+        if (item.isFolder) {
+          return `
+          <div onclick="toggleSelect('${item.relPath}', event)" ondblclick="loadMedia('${item.relPath}')" class="bg-white rounded-2xl p-4 border ${isSelected ? "border-orange-500 bg-orange-50/50 shadow-md" : "border-gray-200 hover:border-gray-300"} cursor-pointer transition group relative flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-2">
+              <i class="fas fa-folder text-amber-400 text-3xl"></i>
+              <button onclick="event.stopPropagation(); deleteItem('${item.relPath}')" class="text-gray-400 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition text-xs">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+            <div>
+              <p class="font-bold text-xs text-gray-900 truncate" title="${item.name}">${item.name}</p>
+              <span class="text-[10px] text-gray-400">Thư mục</span>
+            </div>
+          </div>
+        `;
+        }
+
+        const isImg = item.type === "image";
+        const isVid = item.type === "video";
+
+        return `
+        <div onclick="toggleSelect('${item.relPath}', event)" class="bg-white rounded-2xl border ${isSelected ? "border-orange-500 bg-orange-50/40 shadow-md ring-2 ring-orange-400" : "border-gray-200 hover:border-orange-300"} overflow-hidden cursor-pointer transition group flex flex-col justify-between">
+          <div class="aspect-square bg-gray-900/5 relative overflow-hidden flex items-center justify-center">
+            ${isImg ? `<img src="${item.url}" alt="${item.name}" class="w-full h-full object-cover">` : ""}
+            ${isVid ? `<div class="text-purple-600 text-3xl"><i class="fas fa-file-video"></i></div><div class="absolute inset-0 bg-black/20 flex items-center justify-center text-white"><i class="fas fa-play-circle text-2xl"></i></div>` : ""}
+            ${!isImg && !isVid ? `<i class="fas fa-file text-gray-400 text-3xl"></i>` : ""}
+
+            <!-- Quick Action Overlay -->
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2 p-2">
+              <button onclick="event.stopPropagation(); openPreview('${item.url}', '${item.type}', '${item.name}')" class="w-8 h-8 rounded-full bg-white text-gray-900 hover:bg-orange-500 hover:text-white transition flex items-center justify-center text-xs" title="Xem trước">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button onclick="event.stopPropagation(); copyUrl('${item.url}')" class="w-8 h-8 rounded-full bg-white text-gray-900 hover:bg-orange-500 hover:text-white transition flex items-center justify-center text-xs" title="Copy Link">
+                <i class="fas fa-link"></i>
+              </button>
+              <button onclick="event.stopPropagation(); deleteItem('${item.relPath}')" class="w-8 h-8 rounded-full bg-white text-red-600 hover:bg-red-600 hover:text-white transition flex items-center justify-center text-xs" title="Xóa">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="p-2.5">
+            <p class="font-semibold text-xs text-gray-800 truncate" title="${item.name}">${item.name}</p>
+            <div class="flex items-center justify-between text-[10px] text-gray-400 mt-1">
+              <span>${item.sizeFormatted}</span>
+              <span class="uppercase font-bold ${isImg ? "text-blue-500" : isVid ? "text-purple-500" : ""}">${item.type}</span>
+            </div>
+          </div>
+        </div>
+      `;
+      }
+
+      // List row renderer
+      function renderListRow(item) {
+        const isSelected = selectedRelPaths.has(item.relPath);
+
+        return `
+        <div onclick="toggleSelect('${item.relPath}', event)" ondblclick="${item.isFolder ? `loadMedia('${item.relPath}')` : `openPreview('${item.url}', '${item.type}', '${item.name}')`}" class="px-4 py-3 grid grid-cols-12 gap-2 items-center text-xs hover:bg-orange-50/50 cursor-pointer ${isSelected ? "bg-orange-50 font-bold" : ""}">
+          <div class="col-span-6 flex items-center gap-2.5 truncate">
+            <i class="fas ${item.isFolder ? "fa-folder text-amber-400" : item.type === "image" ? "fa-image text-blue-500" : "fa-video text-purple-500"} text-base"></i>
+            <span class="truncate text-gray-900 font-medium">${item.name}</span>
+          </div>
+          <div class="col-span-3 text-gray-500 text-[11px]">${item.sizeFormatted}</div>
+          <div class="col-span-3 text-right flex items-center justify-end gap-2">
+            ${!item.isFolder ? `<button onclick="event.stopPropagation(); copyUrl('${item.url}')" class="text-orange-600 hover:underline text-xs"><i class="fas fa-copy"></i> Copy</button>` : ""}
+            <button onclick="event.stopPropagation(); deleteItem('${item.relPath}')" class="text-red-500 hover:text-red-700 text-xs"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+      `;
+      }
+
+      // Select toggling
+      function toggleSelect(relPath, event) {
+        if (event.target.closest("button")) return;
+        if (selectedRelPaths.has(relPath)) {
+          selectedRelPaths.delete(relPath);
+        } else {
+          selectedRelPaths.add(relPath);
+        }
+        updateBulkBar();
+        renderItems();
+      }
+
+      function clearSelection() {
+        selectedRelPaths.clear();
+        updateBulkBar();
+        renderItems();
+      }
+
+      function updateBulkBar() {
+        const bar = document.getElementById("bulk-bar");
+        const count = selectedRelPaths.size;
+        if (count > 0) {
+          bar.classList.remove("hidden");
+          document.getElementById("bulk-count").textContent =
+            `Đã chọn ${count} mục`;
+        } else {
+          bar.classList.add("hidden");
+        }
+      }
+
+      // View mode switch
+      function setViewMode(mode) {
+        viewMode = mode;
+        document.getElementById("view-grid-btn").className =
+          mode === "grid"
+            ? "px-2.5 py-1 text-xs font-bold bg-white text-orange-600 shadow-sm"
+            : "px-2.5 py-1 text-xs text-gray-500 hover:text-gray-900";
+        document.getElementById("view-list-btn").className =
+          mode === "list"
+            ? "px-2.5 py-1 text-xs font-bold bg-white text-orange-600 shadow-sm"
+            : "px-2.5 py-1 text-xs text-gray-500 hover:text-gray-900";
+        renderItems();
+      }
+
+      // Copy URL to Clipboard
+      function copyUrl(url) {
+        navigator.clipboard.writeText(url);
+        showToast(`Đã copy đường dẫn: ${url}`);
+      }
+
+      function copySelectedUrls() {
+        const urls = Array.from(selectedRelPaths)
+          .map((rel) => {
+            const item = mediaItems.find((i) => i.relPath === rel);
+            return item && item.url ? item.url : `/uploads/${rel}`;
+          })
+          .filter(Boolean);
+
+        navigator.clipboard.writeText(urls.join("\n"));
+        showToast(`Đã copy ${urls.length} đường dẫn!`);
+      }
+
+      // Toast notification
+      function showToast(msg) {
+        const toast = document.createElement("div");
+        toast.className =
+          "fixed bottom-5 right-5 z-50 bg-gray-900 text-white font-bold text-xs px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2 transition transform translate-y-2";
+        toast.innerHTML = `<i class="fas fa-check-circle text-emerald-400"></i> ${msg}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2500);
+      }
+
+      // Upload Handler
+      async function handleUpload(files) {
+        if (!files || files.length === 0) return;
+        const formData = new FormData();
+        formData.append("dir", currentDir);
+        for (const f of files) {
+          formData.append("files", f);
+        }
+
+        showToast("Đang tải file lên media...");
+        try {
+          const res = await fetch("/admin/api/media/upload", {
+            method: "POST",
+            body: formData,
+          });
+          const data = await res.json();
+          if (data.error) throw new Error(data.error);
+          showToast("Tải lên media thành công!");
+          loadMedia(currentDir);
+        } catch (err) {
+          alert(err.message || "Lỗi upload media");
+        }
+      }
+
+      // Create Folder
+      async function promptCreateFolder() {
+        const folderName = prompt("Nhập tên thư mục mới:");
+        if (!folderName || !folderName.trim()) return;
+
+        try {
+          const res = await fetch("/admin/api/media/folder", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              dir: currentDir,
+              folderName: folderName.trim(),
+            }),
+          });
+          const data = await res.json();
+          if (data.error) throw new Error(data.error);
+          showToast("Tạo thư mục thành công!");
+          loadMedia(currentDir);
+        } catch (err) {
+          alert(err.message || "Lỗi tạo thư mục");
+        }
+      }
+
+      // Delete item
+      async function deleteItem(relPath) {
+        if (!confirm(`Bạn có chắc muốn xóa: ${relPath}?`)) return;
+        try {
+          const res = await fetch("/admin/api/media/delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ relPath }),
+          });
+          const data = await res.json();
+          if (data.error) throw new Error(data.error);
+          showToast("Đã xóa mục thành công!");
+          loadMedia(currentDir);
+        } catch (err) {
+          alert(err.message || "Lỗi xóa mục");
+        }
+      }
+
+      async function deleteSelectedItems() {
+        if (!confirm(`Xóa ${selectedRelPaths.size} mục đã chọn?`)) return;
+        for (const relPath of selectedRelPaths) {
+          await deleteItem(relPath);
+        }
+        clearSelection();
+      }
+
+      // Preview Modal
+      function openPreview(url, type, name) {
+        currentPreviewUrl = url;
+        document.getElementById("preview-title").textContent = name;
+        document.getElementById("preview-url-text").textContent = url;
+        const body = document.getElementById("preview-body");
+
+        if (type === "image") {
+          body.innerHTML = `<img src="${url}" class="max-w-full max-h-[70vh] rounded-2xl object-contain shadow-lg">`;
+        } else if (type === "video") {
+          body.innerHTML = `<video src="${url}" controls autoplay class="max-w-full max-h-[70vh] rounded-2xl shadow-lg"></video>`;
+        } else {
+          body.innerHTML = `<div class="text-white text-sm font-bold">Không thể xem trước định dạng này.</div>`;
+        }
+
+        document.getElementById("preview-modal").classList.remove("hidden");
+      }
+
+      function closePreviewModal() {
+        document.getElementById("preview-modal").classList.add("hidden");
+        document.getElementById("preview-body").innerHTML = "";
+      }
+
+      // Drag and Drop Zone logic
+      const dropZone = document.getElementById("drop-zone");
+      ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+        document.addEventListener(eventName, (e) => e.preventDefault());
+      });
+      ["dragenter", "dragover"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, () =>
+          dropZone.classList.add("drop-zone-active"),
+        );
+      });
+      ["dragleave", "drop"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, () =>
+          dropZone.classList.remove("drop-zone-active"),
+        );
+      });
+      dropZone.addEventListener("drop", (e) => {
+        const dt = e.dataTransfer;
+        if (dt && dt.files && dt.files.length > 0) {
+          handleUpload(dt.files);
+        }
+      });
+
+      // Initialize
+      loadMedia("");
+    </script>
+  </body>
+</html>

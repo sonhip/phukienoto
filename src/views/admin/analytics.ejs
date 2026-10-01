@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="shortcut icon" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>* { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <!-- Top Admin Navbar -->
+  <header class="bg-gray-900 text-white sticky top-0 z-30 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 bg-orange-500 rounded-xl flex items-center justify-center font-black">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div>
+            <h1 class="text-base font-bold leading-none">SmartLifeHub Admin</h1>
+            <p class="text-[10px] text-gray-400">Báo Cáo Doanh Thu & Lịch Sử Đơn Hàng</p>
+          </div>
+        </div>
+
+        <nav class="hidden md:flex items-center gap-2">
+          <a href="/admin" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-300 hover:bg-gray-800 hover:text-white transition">
+            <i class="fas fa-shopping-bag mr-1"></i> Xử Lý Đơn
+          </a>
+          <a href="/admin/analytics" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-500 text-white">
+            <i class="fas fa-chart-pie mr-1"></i> Báo Cáo Doanh Thu
+          </a>
+          <a href="/admin/products" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-300 hover:bg-gray-800 hover:text-white transition">
+            <i class="fas fa-box-open mr-1"></i> Quản Lý Sản Phẩm
+          </a>
+          <a href="/admin/media" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-300 hover:bg-gray-800 hover:text-white transition">
+            <i class="fas fa-folder-open mr-1"></i> Thư Viện Media
+          </a>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <a href="/" target="_blank" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold px-3 py-2 rounded-lg transition">
+          <i class="fas fa-external-link-alt mr-1"></i> Xem Web
+        </a>
+        <a href="/admin/logout" class="text-xs bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-2 rounded-lg transition">
+          <i class="fas fa-sign-out-alt mr-1"></i> Đăng Xuất
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+    
+    <!-- Title & Filter Range Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-2xl font-black text-gray-900">Báo Cáo Doanh Thu & Tra Cứu Lịch Sử Đơn Hàng</h2>
+        <p class="text-xs text-gray-500 mt-1">Theo dõi các chỉ số tài chính, phương thức thanh toán và lịch sử giao dịch toàn hệ thống.</p>
+      </div>
+
+      <div class="flex items-center gap-2 bg-white p-1.5 rounded-2xl shadow-sm border border-gray-200 self-start md:self-auto">
+        <a href="/admin/analytics?range=all" class="px-3 py-1.5 rounded-xl text-xs font-bold transition <%= range === 'all' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100' %>">Tất Cả</a>
+        <a href="/admin/analytics?range=today" class="px-3 py-1.5 rounded-xl text-xs font-bold transition <%= range === 'today' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100' %>">Hôm Nay</a>
+        <a href="/admin/analytics?range=7days" class="px-3 py-1.5 rounded-xl text-xs font-bold transition <%= range === '7days' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100' %>">7 Ngày Qua</a>
+        <a href="/admin/analytics?range=30days" class="px-3 py-1.5 rounded-xl text-xs font-bold transition <%= range === '30days' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100' %>">30 Ngày Qua</a>
+      </div>
+    </div>
+
+    <!-- Revenue Metrics Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      
+      <!-- Total Revenue -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+        <div class="flex items-center justify-between text-xs font-semibold text-gray-500 mb-2">
+          <span>TỔNG DOANH THU</span>
+          <i class="fas fa-coins text-emerald-500 text-base"></i>
+        </div>
+        <div class="text-2xl font-black text-emerald-600"><%= formatCurrency(metrics.totalRevenue) %></div>
+        <div class="text-[10px] text-gray-400 mt-1">Đơn đã xác nhận & hoàn thành</div>
+      </div>
+
+      <!-- Today Revenue -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+        <div class="flex items-center justify-between text-xs font-semibold text-gray-500 mb-2">
+          <span>DOANH THU HÔM NAY</span>
+          <i class="fas fa-calendar-day text-blue-500 text-base"></i>
+        </div>
+        <div class="text-2xl font-black text-blue-600"><%= formatCurrency(metrics.todayRevenue) %></div>
+        <div class="text-[10px] text-gray-400 mt-1">Phát sinh trong ngày</div>
+      </div>
+
+      <!-- Bank Transfer vs COD Revenue -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+        <div class="flex items-center justify-between text-xs font-semibold text-gray-500 mb-2">
+          <span>DT CHUYỂN KHOẢN (QR)</span>
+          <i class="fas fa-qrcode text-amber-500 text-base"></i>
+        </div>
+        <div class="text-2xl font-black text-amber-600"><%= formatCurrency(metrics.bankRevenue) %></div>
+        <div class="text-[10px] text-gray-400 mt-1">COD: <%= formatCurrency(metrics.codRevenue) %></div>
+      </div>
+
+      <!-- Average Order Value (AOV) -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+        <div class="flex items-center justify-between text-xs font-semibold text-gray-500 mb-2">
+          <span>GIÁ TRỊ ĐƠN TB (AOV)</span>
+          <i class="fas fa-calculator text-purple-500 text-base"></i>
+        </div>
+        <div class="text-2xl font-black text-purple-600"><%= formatCurrency(metrics.avgOrderValue) %></div>
+        <div class="text-[10px] text-gray-400 mt-1">Tổng đơn duyệt: <%= metrics.confirmedOrders %> / <%= metrics.totalOrders %></div>
+      </div>
+
+    </div>
+
+    <!-- Analytics Charts Section -->
+    <div class="grid md:grid-cols-3 gap-6">
+      
+      <!-- Sales Trend Bar Chart -->
+      <div class="md:col-span-2 bg-white p-6 rounded-3xl shadow-sm border border-gray-200">
+        <h3 class="font-extrabold text-gray-900 mb-4 text-base flex items-center justify-between">
+          <span><i class="fas fa-chart-area text-orange-500 mr-2"></i> Xu Hướng Doanh Thu Ngày</span>
+          <span class="text-xs font-normal text-gray-400">14 ngày gần nhất</span>
+        </h3>
+        <div class="aspect-[16/7] w-full">
+          <canvas id="salesChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Payment Method Doughnut Chart -->
+      <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-200 flex flex-col justify-between">
+        <h3 class="font-extrabold text-gray-900 mb-4 text-base flex items-center gap-2">
+          <i class="fas fa-pie-chart text-purple-500"></i> Cơ Cấu Thanh Toán
+        </h3>
+        <div class="aspect-square w-full max-w-[220px] mx-auto">
+          <canvas id="paymentChart"></canvas>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-center text-xs pt-4 border-t border-gray-100">
+          <div class="bg-amber-50 p-2 rounded-xl">
+            <span class="block text-amber-800 font-bold">Chuyển Khoản</span>
+            <span class="text-[11px] text-amber-600 font-extrabold"><%= formatCurrency(metrics.bankRevenue) %></span>
+          </div>
+          <div class="bg-gray-50 p-2 rounded-xl">
+            <span class="block text-gray-700 font-bold">COD</span>
+            <span class="text-[11px] text-gray-600 font-extrabold"><%= formatCurrency(metrics.codRevenue) %></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Order History & Search Section -->
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
+      
+      <div class="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h3 class="font-extrabold text-gray-900 text-lg flex items-center gap-2">
+            <i class="fas fa-history text-orange-500"></i> Tra Cứu & Lịch Sử Đơn Hàng
+          </h3>
+          <p class="text-xs text-gray-500 mt-0.5">Tìm kiếm nhanh theo Số điện thoại, Mã đơn hàng, Tên hoặc Địa chỉ khách hàng.</p>
+        </div>
+
+        <form action="/admin/analytics" method="GET" class="flex gap-2">
+          <input type="hidden" name="range" value="<%= range %>">
+          <input type="text" name="search" value="<%= search %>" placeholder="Nhập SĐT, Mã đơn, Tên..." class="border border-gray-300 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-orange-500 w-64 font-semibold">
+          <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-4 py-2 rounded-xl text-xs shadow transition">
+            <i class="fas fa-search"></i>
+          </button>
+        </form>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-gray-50 text-[11px] font-bold text-gray-500 uppercase border-b border-gray-100">
+              <th class="py-3 px-4">Mã Đơn</th>
+              <th class="py-3 px-4">Khách Hàng & SĐT</th>
+              <th class="py-3 px-4">Địa Chỉ</th>
+              <th class="py-3 px-4">Sản Phẩm</th>
+              <th class="py-3 px-4">Thanh Toán</th>
+              <th class="py-3 px-4">Tổng Tiền</th>
+              <th class="py-3 px-4">Trạng Thái</th>
+              <th class="py-3 px-4">Ngày Tạo</th>
+              <th class="py-3 px-4 text-center">Thao Tác</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 text-xs text-gray-700 font-medium">
+            <% if (ordersHistory.length === 0) { %>
+            <tr>
+              <td colspan="9" class="py-8 text-center text-gray-400">
+                <i class="fas fa-inbox text-3xl mb-2 block"></i> Không tìm thấy đơn hàng lịch sử nào matching.
+              </td>
+            </tr>
+            <% } else { %>
+            <% ordersHistory.forEach(order => { %>
+            <tr class="hover:bg-gray-50 transition">
+              <td class="py-3.5 px-4 font-bold text-gray-900">
+                <a href="/admin/order/<%= order.id %>" class="hover:underline text-orange-600">#<%= order.order_code %></a>
+                <% if (order.is_priority) { %>
+                <span class="block text-[9px] font-black bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded mt-0.5 w-max">⚡ ƯU TIÊN</span>
+                <% } %>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="font-bold text-gray-900"><%= order.customer_name %></div>
+                <div class="text-gray-500 font-mono text-[11px]"><%= order.customer_phone %></div>
+              </td>
+              <td class="py-3.5 px-4 max-w-xs truncate" title="<%= order.customer_address %>">
+                <%= order.customer_address %>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="space-y-0.5">
+                  <% order.items.forEach(item => { %>
+                  <div class="truncate max-w-xs text-[11px]">
+                    <span class="font-bold text-gray-900"><%= item.quantity %>x</span> <%= item.name %>
+                  </div>
+                  <% }) %>
+                </div>
+              </td>
+              <td class="py-3.5 px-4">
+                <% if (order.payment_method === 'BANK_TRANSFER') { %>
+                <span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">QR Bank</span>
+                <% } else { %>
+                <span class="bg-gray-100 text-gray-700 text-[10px] font-bold px-2 py-0.5 rounded-full">COD</span>
+                <% } %>
+              </td>
+              <td class="py-3.5 px-4 font-black text-red-600">
+                <%= formatCurrency(order.total_amount) %>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full <%= ORDER_STATUS_LABELS[order.order_status]?.color || 'bg-gray-100 text-gray-700' %>">
+                  <%= ORDER_STATUS_LABELS[order.order_status]?.label || order.order_status %>
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-gray-400 text-[11px]">
+                <%= order.created_at %>
+              </td>
+              <td class="py-3.5 px-4 text-center">
+                <a href="/admin/order/<%= order.id %>" class="bg-gray-100 hover:bg-orange-500 hover:text-white text-gray-700 font-bold px-2.5 py-1.5 rounded-lg text-xs transition">
+                  <i class="fas fa-eye"></i> Xem
+                </a>
+              </td>
+            </tr>
+            <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    // Sales Trend Chart
+    const salesData = <%- JSON.stringify(chartData) %>;
+    const ctxSales = document.getElementById('salesChart').getContext('2d');
+    new Chart(ctxSales, {
+      type: 'bar',
+      data: {
+        labels: salesData.map(d => d.date),
+        datasets: [{
+          label: 'Doanh thu (VNĐ)',
+          data: salesData.map(d => d.total),
+          backgroundColor: '#ea580c',
+          borderRadius: 8,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+
+    // Payment Method Chart
+    const ctxPay = document.getElementById('paymentChart').getContext('2d');
+    new Chart(ctxPay, {
+      type: 'doughnut',
+      data: {
+        labels: ['Chuyển Khoản (QR)', 'COD'],
+        datasets: [{
+          data: [<%= metrics.bankRevenue %>, <%= metrics.codRevenue %>],
+          backgroundColor: ['#f59e0b', '#6b7280'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+  </script>
+</body>
+</html>

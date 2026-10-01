@@ -1,0 +1,108 @@
+<%- include('../partials/header') %>
+
+<div class="bg-gray-50 py-10 min-h-screen">
+  <div class="max-w-3xl mx-auto px-4">
+    <h1 class="text-2xl font-black text-gray-900 mb-6 flex items-center gap-2">
+      <i class="fas fa-search text-orange-500"></i> Tra Cứu Đơn Hàng
+    </h1>
+
+    <!-- Search Form -->
+    <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-200 mb-8">
+      <p class="text-sm text-gray-600 mb-4">Nhập <strong>số điện thoại</strong> hoặc <strong>mã đơn hàng</strong> để tra cứu tình trạng đơn hàng của bạn.</p>
+      <form action="/tracking" method="GET" class="flex flex-col sm:flex-row gap-3">
+        <input type="text" name="phone" value="<%= phone %>" placeholder="Nhập số điện thoại (VD: 0912345678)" class="flex-1 border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition">
+        <span class="text-gray-400 text-xs self-center hidden sm:block">hoặc</span>
+        <input type="text" name="code" value="<%= code %>" placeholder="Mã đơn hàng (VD: SLHAB12)" class="flex-1 border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition">
+        <button type="submit" class="gradient-cta text-white font-bold px-8 py-3 rounded-xl shadow hover:opacity-95 transition flex items-center justify-center gap-2">
+          <i class="fas fa-search"></i> Tra Cứu
+        </button>
+      </form>
+    </div>
+
+    <!-- Results -->
+    <% if ((phone || code) && orders.length === 0) { %>
+    <div class="bg-white rounded-3xl p-8 text-center shadow-sm border border-gray-200">
+      <div class="w-16 h-16 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+        <i class="fas fa-inbox"></i>
+      </div>
+      <h2 class="text-lg font-bold text-gray-800 mb-2">Không tìm thấy đơn hàng</h2>
+      <p class="text-sm text-gray-500">Vui lòng kiểm tra lại số điện thoại hoặc mã đơn hàng.</p>
+    </div>
+    <% } %>
+
+    <% if (orders.length > 0) { %>
+    <div class="space-y-6">
+      <% orders.forEach(order => { %>
+      <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-200">
+        <!-- Order Header -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-gray-100">
+          <div>
+            <span class="text-xs text-gray-500">Mã đơn:</span>
+            <span class="font-black text-orange-600 text-sm ml-1"><%= order.order_code %></span>
+          </div>
+          <div>
+            <span class="text-xs text-gray-500">Ngày đặt:</span>
+            <span class="font-semibold text-gray-800 text-xs ml-1"><%= new Date(order.created_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></span>
+          </div>
+          <% const statusInfo = ORDER_STATUS_LABELS[order.order_status] || { label: order.order_status, color: 'bg-gray-100 text-gray-800' }; %>
+          <span class="text-xs font-bold px-3 py-1.5 rounded-full border <%= statusInfo.color %>">
+            <%= statusInfo.label %>
+          </span>
+        </div>
+
+        <!-- Order Items -->
+        <div class="space-y-2 mb-4">
+          <% order.items.forEach(item => { %>
+          <div class="flex items-center gap-3 text-xs">
+            <img src="<%= item.image %>" alt="<%= item.name %>" class="w-10 h-10 rounded-lg object-cover bg-gray-100">
+            <div class="flex-1">
+              <span class="font-semibold text-gray-900"><%= item.name %></span>
+              <span class="text-gray-500 ml-1">x<%= item.quantity %></span>
+            </div>
+            <span class="font-bold text-gray-900"><%= formatCurrency(item.price * item.quantity) %></span>
+          </div>
+          <% }) %>
+        </div>
+
+        <!-- Order Footer -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-gray-100">
+          <div class="text-xs text-gray-500">
+            <i class="fas fa-credit-card mr-1"></i>
+            <%= order.payment_method === 'BANK_TRANSFER' ? 'Chuyển khoản ngân hàng' : 'Thanh toán khi nhận hàng (COD)' %>
+            <% if (order.is_priority) { %>
+            <span class="ml-2 bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded text-[10px]">⚡ ƯU TIÊN</span>
+            <% } %>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-gray-500">Tổng:</span>
+            <span class="font-black text-red-600 text-base ml-1"><%= formatCurrency(order.total_amount) %></span>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mt-6 pt-4 border-t border-gray-100">
+          <div class="flex justify-between items-center text-[10px] text-gray-500 relative">
+            <div class="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-gray-200 -z-0"></div>
+            <% 
+              const steps = ['Đặt hàng', order.is_priority ? 'Ưu tiên' : 'Chờ xác nhận', 'Đóng gói', 'Đang giao', 'Hoàn thành'];
+              const statusMap = { 'PRIORITY_QUEUE': 1, 'PENDING': 1, 'CONFIRMED': 2, 'SHIPPING': 3, 'DELIVERED': 4, 'CANCELLED': -1 };
+              const currentStep = statusMap[order.order_status] || 0;
+            %>
+            <% steps.forEach((step, idx) => { %>
+            <div class="relative z-10 text-center bg-white px-1">
+              <div class="w-5 h-5 rounded-full <%= idx <= currentStep ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-400' %> flex items-center justify-center mx-auto mb-0.5 text-[8px] font-bold">
+                <% if (idx <= currentStep) { %><i class="fas fa-check"></i><% } else { %><%= idx + 1 %><% } %>
+              </div>
+              <span class="<%= idx <= currentStep ? 'text-gray-800 font-semibold' : 'text-gray-400' %>"><%= step %></span>
+            </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

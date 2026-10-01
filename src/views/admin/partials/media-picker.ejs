@@ -1,0 +1,270 @@
+<!-- Reusable Media Picker Modal Partial -->
+<div
+  id="media-picker-modal"
+  class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center p-4"
+>
+  <div
+    class="bg-white rounded-3xl max-w-5xl w-full h-[85vh] flex flex-col overflow-hidden shadow-2xl border border-gray-200"
+  >
+    <!-- Modal Header -->
+    <div
+      class="px-6 py-4 bg-gray-900 text-white flex items-center justify-between border-b border-gray-800"
+    >
+      <div class="flex items-center gap-2">
+        <i class="fas fa-images text-orange-500 text-lg"></i>
+        <h3 class="font-bold text-sm">Thư Viện Media - Chọn Ảnh / Video</h3>
+      </div>
+      <button
+        type="button"
+        onclick="closeMediaPicker()"
+        class="text-gray-400 hover:text-white text-lg"
+      >
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Modal Controls Bar -->
+    <div
+      class="p-4 bg-gray-50 border-b border-gray-200 flex flex-wrap items-center justify-between gap-3 text-xs"
+    >
+      <!-- Breadcrumb Nav -->
+      <nav
+        id="picker-breadcrumbs"
+        class="flex items-center gap-1.5 font-semibold text-gray-700"
+      >
+        <!-- Rendered by JS -->
+      </nav>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-2">
+        <input
+          type="text"
+          id="picker-search"
+          placeholder="Lọc media..."
+          oninput="renderPickerItems()"
+          class="px-3 py-1.5 border border-gray-300 rounded-xl text-xs focus:outline-none focus:border-orange-500 w-36 sm:w-48"
+        />
+
+        <label
+          class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1"
+        >
+          <i class="fas fa-upload"></i> Upload
+          <input
+            type="file"
+            multiple
+            accept="image/*,video/*"
+            class="hidden"
+            onchange="pickerUpload(this.files)"
+          />
+        </label>
+      </div>
+    </div>
+
+    <!-- Media Grid Area -->
+    <div
+      id="picker-content"
+      class="p-6 overflow-y-auto flex-grow bg-gray-100 min-h-0"
+    >
+      <!-- Media grid rendered here -->
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div
+      class="p-4 bg-white border-t border-gray-200 flex items-center justify-between"
+    >
+      <span class="text-xs font-bold text-gray-600" id="picker-selected-count"
+        >Đã chọn 0 file</span
+      >
+      <div class="flex items-center gap-3">
+        <button
+          type="button"
+          onclick="closeMediaPicker()"
+          class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs"
+        >
+          Hủy Bỏ
+        </button>
+        <button
+          type="button"
+          onclick="confirmPickerSelection()"
+          class="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white font-extrabold rounded-xl text-xs shadow"
+        >
+          <i class="fas fa-check mr-1"></i> Chèn File Đã Chọn
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let pickerCurrentDir = "";
+  let pickerItems = [];
+  let pickerSelectedUrls = new Set();
+  let pickerTargetElement = null;
+  let pickerFormatType = "text"; // "text", "video", "input"
+
+  function openMediaPicker(targetElement, formatType = "text") {
+    pickerTargetElement =
+      typeof targetElement === "string"
+        ? document.getElementById(targetElement)
+        : targetElement;
+    pickerFormatType = formatType;
+    pickerSelectedUrls.clear();
+    updatePickerCount();
+    document.getElementById("media-picker-modal").classList.remove("hidden");
+    loadPickerMedia("");
+  }
+
+  function closeMediaPicker() {
+    document.getElementById("media-picker-modal").classList.add("hidden");
+    pickerTargetElement = null;
+  }
+
+  async function loadPickerMedia(dir = "") {
+    pickerCurrentDir = dir;
+    const content = document.getElementById("picker-content");
+    content.innerHTML = `<div class="py-12 text-center text-gray-400 text-xs"><i class="fas fa-spinner fa-spin mr-2"></i> Đang tải media...</div>`;
+
+    try {
+      const res = await fetch(
+        `/admin/api/media/list?dir=${encodeURIComponent(dir)}`,
+      );
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      pickerCurrentDir = data.currentDir;
+      pickerItems = data.items || [];
+      renderPickerCrumbs(data.breadcrumbs || []);
+      renderPickerItems();
+    } catch (err) {
+      content.innerHTML = `<div class="py-12 text-center text-red-500 text-xs font-bold">${err.message}</div>`;
+    }
+  }
+
+  function renderPickerCrumbs(crumbs) {
+    const container = document.getElementById("picker-breadcrumbs");
+    container.innerHTML = crumbs
+      .map((crumb, idx) => {
+        if (idx === crumbs.length - 1) {
+          return `<span class="text-orange-600 font-bold">${crumb.name}</span>`;
+        }
+        return `<button type="button" onclick="loadPickerMedia('${crumb.path}')" class="hover:underline">${crumb.name}</button><span>/</span>`;
+      })
+      .join("");
+  }
+
+  function renderPickerItems() {
+    const search = (document.getElementById("picker-search").value || "")
+      .toLowerCase()
+      .trim();
+    const filtered = pickerItems.filter((i) =>
+      i.name.toLowerCase().includes(search),
+    );
+    const content = document.getElementById("picker-content");
+
+    if (filtered.length === 0) {
+      content.innerHTML = `<div class="py-12 text-center text-gray-400 text-xs">Thư mục rỗng</div>`;
+      return;
+    }
+
+    content.className = "grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3";
+    content.innerHTML = filtered
+      .map((item) => {
+        if (item.isFolder) {
+          return `
+          <div onclick="loadPickerMedia('${item.relPath}')" class="bg-white rounded-xl p-3 border border-gray-200 hover:border-orange-500 cursor-pointer flex flex-col justify-between">
+            <i class="fas fa-folder text-amber-400 text-2xl mb-1"></i>
+            <span class="font-bold text-xs truncate text-gray-800">${item.name}</span>
+          </div>
+        `;
+        }
+
+        const isSelected = pickerSelectedUrls.has(item.url);
+        const isImg = item.type === "image";
+        const isVid = item.type === "video";
+
+        return `
+        <div onclick="togglePickerSelect('${item.url}')" class="bg-white rounded-xl border-2 ${isSelected ? "border-orange-500 ring-2 ring-orange-400 bg-orange-50" : "border-gray-200 hover:border-gray-300"} overflow-hidden cursor-pointer flex flex-col justify-between">
+          <div class="aspect-square bg-gray-900/5 relative flex items-center justify-center">
+            ${isImg ? `<img src="${item.url}" class="w-full h-full object-cover">` : ""}
+            ${isVid ? `<div class="text-purple-600 text-2xl"><i class="fas fa-video"></i></div>` : ""}
+            ${isSelected ? `<div class="absolute top-1 right-1 bg-orange-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold"><i class="fas fa-check"></i></div>` : ""}
+          </div>
+          <div class="p-2">
+            <p class="text-[11px] font-bold truncate text-gray-800">${item.name}</p>
+            <span class="text-[9px] text-gray-400">${item.sizeFormatted}</span>
+          </div>
+        </div>
+      `;
+      })
+      .join("");
+  }
+
+  function togglePickerSelect(url) {
+    if (pickerFormatType === "input") {
+      pickerSelectedUrls.clear();
+      pickerSelectedUrls.add(url);
+    } else {
+      if (pickerSelectedUrls.has(url)) {
+        pickerSelectedUrls.delete(url);
+      } else {
+        pickerSelectedUrls.add(url);
+      }
+    }
+    updatePickerCount();
+    renderPickerItems();
+  }
+
+  function updatePickerCount() {
+    document.getElementById("picker-selected-count").textContent =
+      `Đã chọn ${pickerSelectedUrls.size} file`;
+  }
+
+  async function pickerUpload(files) {
+    if (!files || files.length === 0) return;
+    const formData = new FormData();
+    formData.append("dir", pickerCurrentDir);
+    for (const f of files) formData.append("files", f);
+
+    try {
+      const res = await fetch("/admin/api/media/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      loadPickerMedia(pickerCurrentDir);
+    } catch (e) {
+      alert(e.message || "Lỗi upload");
+    }
+  }
+
+  function confirmPickerSelection() {
+    if (!pickerTargetElement || pickerSelectedUrls.size === 0) {
+      closeMediaPicker();
+      return;
+    }
+
+    const urls = Array.from(pickerSelectedUrls);
+
+    if (pickerTargetElement.tagName === "TEXTAREA") {
+      const currentVal = pickerTargetElement.value.trim();
+      const newLines = urls
+        .map((u) => {
+          if (pickerFormatType === "video") {
+            const filename = u.split("/").pop();
+            return `Video ${filename} | ${u}`;
+          }
+          return u;
+        })
+        .join("\n");
+
+      pickerTargetElement.value = currentVal
+        ? `${currentVal}\n${newLines}`
+        : newLines;
+    } else if (pickerTargetElement.tagName === "INPUT") {
+      pickerTargetElement.value = urls[0] || "";
+    }
+
+    closeMediaPicker();
+  }
+</script>

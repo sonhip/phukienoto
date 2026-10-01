@@ -1,0 +1,120 @@
+<%- include('../partials/header') %>
+
+<!-- Single Product Landing Page for Ads -->
+<section class="gradient-hero text-white py-10 lg:py-16">
+  <div class="max-w-6xl mx-auto px-4 grid lg:grid-cols-2 gap-10 items-center">
+    <div>
+      <div class="inline-flex items-center gap-2 bg-red-500/20 border border-red-500/40 text-red-300 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
+        <i class="fas fa-fire text-yellow-400"></i> ƯU ĐÃI ĐỘC QUYỀN - CHỈ CÓ TẠI WEB
+      </div>
+      <h1 class="text-3xl md:text-4xl font-black leading-tight mb-4"><%= product.name %></h1>
+      <p class="text-gray-300 text-sm leading-relaxed mb-6"><%= product.summary %></p>
+
+      <div class="bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/10 mb-6">
+        <div class="flex items-baseline gap-4 mb-2">
+          <span class="text-3xl font-black text-yellow-400"><%= formatCurrency(product.sale_price) %></span>
+          <span class="text-base text-gray-400 price-slash"><%= formatCurrency(product.original_price) %></span>
+          <span class="bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
+            GIẢM <%= Math.round((1 - product.sale_price / product.original_price) * 100) %>%
+          </span>
+        </div>
+        <p class="text-xs text-emerald-300">
+          <i class="fas fa-check-circle mr-1"></i> Tiết kiệm <%= formatCurrency(product.original_price - product.sale_price) %> so với giá niêm yết
+        </p>
+      </div>
+
+      <ul class="space-y-2 text-sm text-gray-200 mb-6">
+        <% product.highlights.forEach(h => { %>
+        <li class="flex items-center gap-2"><i class="fas fa-check-circle text-emerald-400"></i> <%= h %></li>
+        <% }) %>
+      </ul>
+
+      <div class="flex flex-wrap gap-3">
+        <button onclick="buyNow(<%= product.id %>)" class="gradient-cta text-white font-extrabold px-10 py-4 rounded-2xl shadow-xl hover:opacity-95 transition flex items-center gap-2 text-sm">
+          <i class="fas fa-bolt text-lg"></i> MUA NGAY - GIAO TẬN NƠI
+        </button>
+        <a href="/product/<%= product.slug %>" class="bg-white/10 hover:bg-white/20 text-white font-semibold px-6 py-4 rounded-2xl transition text-sm">
+          Xem Chi Tiết →
+        </a>
+      </div>
+    </div>
+
+    <div class="bg-white p-4 rounded-3xl shadow-2xl">
+      <img src="<%= product.images[0] %>" alt="<%= product.name %>" class="w-full rounded-2xl aspect-square object-cover">
+    </div>
+  </div>
+</section>
+
+<!-- Trust Badges -->
+<section class="bg-white py-8 border-b border-gray-100">
+  <div class="max-w-6xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center text-xs">
+    <div class="flex flex-col items-center gap-2 p-4">
+      <i class="fas fa-shield-alt text-emerald-500 text-2xl"></i>
+      <span class="font-bold text-gray-900">Bảo Hành 12 Tháng</span>
+      <span class="text-gray-500">1 đổi 1 tận nhà</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4">
+      <i class="fas fa-truck-fast text-blue-500 text-2xl"></i>
+      <span class="font-bold text-gray-900">Giao Hàng Toàn Quốc</span>
+      <span class="text-gray-500">2-5 ngày làm việc</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4">
+      <i class="fas fa-bolt text-amber-500 text-2xl"></i>
+      <span class="font-bold text-gray-900">Ưu Tiên CK</span>
+      <span class="text-gray-500">Gửi sớm hơn 24h</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4">
+      <i class="fas fa-box-open text-orange-500 text-2xl"></i>
+      <span class="font-bold text-gray-900">Kiểm Hàng COD</span>
+      <span class="text-gray-500">Mở kiểm tra trước khi trả</span>
+    </div>
+  </div>
+</section>
+
+<!-- Reviews Section -->
+<section class="bg-gray-50 py-12">
+  <div class="max-w-4xl mx-auto px-4">
+    <h2 class="text-2xl font-black text-gray-900 text-center mb-8">⭐ Khách Hàng Nói Gì?</h2>
+    <div class="grid md:grid-cols-3 gap-6">
+      <% product.reviews.forEach(rev => { %>
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+        <div class="flex text-yellow-400 text-sm mb-2">
+          <% for(let i=0; i<rev.rating; i++) { %><i class="fas fa-star"></i><% } %>
+        </div>
+        <p class="text-sm text-gray-700 mb-3">"<%= rev.comment %>"</p>
+        <div class="flex items-center gap-2 text-xs text-gray-500">
+          <div class="w-7 h-7 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-[10px]">
+            <%= rev.name.charAt(0) %>
+          </div>
+          <span class="font-semibold text-gray-800"><%= rev.name %></span>
+          <span>•</span>
+          <span><%= rev.date %></span>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<!-- Sticky Bottom CTA -->
+<div class="sticky-cart bg-white border-t border-gray-200 shadow-2xl py-3 px-4">
+  <div class="max-w-6xl mx-auto flex items-center justify-between gap-4">
+    <div class="hidden sm:block">
+      <p class="font-bold text-gray-900 text-sm truncate"><%= product.name %></p>
+      <div class="flex items-baseline gap-2">
+        <span class="text-lg font-black text-red-600"><%= formatCurrency(product.sale_price) %></span>
+        <span class="text-xs text-gray-400 price-slash"><%= formatCurrency(product.original_price) %></span>
+      </div>
+    </div>
+    <div class="flex gap-3 flex-1 sm:flex-none">
+      <button onclick="addToCart(<%= product.id %>)" class="bg-orange-100 text-orange-700 hover:bg-orange-200 font-bold py-3 px-6 rounded-xl text-sm transition flex items-center gap-2">
+        <i class="fas fa-cart-plus"></i> <span class="hidden sm:inline">Thêm Giỏ</span>
+      </button>
+      <button onclick="buyNow(<%= product.id %>)" class="gradient-cta text-white font-extrabold py-3 px-8 rounded-xl text-sm shadow-lg hover:opacity-95 transition flex-1 sm:flex-none flex items-center justify-center gap-2">
+        <i class="fas fa-bolt"></i> MUA NGAY
+      </button>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

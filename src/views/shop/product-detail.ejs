@@ -1,0 +1,320 @@
+<%- include('../partials/header') %>
+
+<div class="bg-gray-50 py-8">
+  <div class="max-w-7xl mx-auto px-4">
+    <!-- Breadcrumb -->
+    <nav class="flex text-xs text-gray-500 mb-6 gap-2">
+      <a href="/" class="hover:text-orange-600">Trang chủ</a>
+      <span>/</span>
+      <a href="/#products" class="hover:text-orange-600">Sản phẩm</a>
+      <span>/</span>
+      <span class="text-gray-900 font-semibold truncate"><%= product.name %></span>
+    </nav>
+
+    <!-- Product Main Grid -->
+    <div class="bg-white rounded-3xl p-6 lg:p-10 shadow-sm border border-gray-200 grid lg:grid-cols-2 gap-10 mb-12">
+      
+      <!-- Image Gallery -->
+      <div class="gallery-media min-w-0">
+        <div class="bg-gray-100 rounded-2xl overflow-hidden aspect-square mb-4 relative max-w-full">
+          <img id="main-image" src="<%= product.images[0] %>" alt="<%= product.name %>" class="w-full h-full object-cover block max-w-full">
+          <% if (product.badge) { %>
+          <span class="absolute top-4 left-4 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase shadow">
+            <%= product.badge %>
+          </span>
+          <% } %>
+        </div>
+
+        <% if (product.images.length > 1) { %>
+        <div class="thumb-row flex gap-3 overflow-x-auto pb-2 max-w-full">
+          <% product.images.forEach((img, idx) => { %>
+          <button onclick="changeImage('<%= img %>')" class="thumb-btn w-20 h-20 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-orange-500 transition focus:outline-none flex-shrink-0 bg-white">
+            <img src="<%= img %>" alt="Thumbnail" class="w-full h-full object-cover block max-w-full">
+          </button>
+          <% }) %>
+        </div>
+        <% } %>
+      </div>
+
+      <!-- Info & Buy Form -->
+      <div class="flex flex-col justify-between">
+        <div>
+          <div class="flex items-center gap-3 mb-2">
+            <div class="flex items-center gap-1 text-yellow-400 text-sm">
+              <i class="fas fa-star"></i>
+              <span class="font-bold text-gray-800 ml-1"><%= product.rating %></span>
+            </div>
+            <span class="text-gray-300">•</span>
+            <span class="text-xs text-gray-500"><%= product.rating_count %> Đánh giá</span>
+            <span class="text-gray-300">•</span>
+            <span class="text-xs text-gray-500">Đã bán <%= product.sold_count %></span>
+          </div>
+
+          <h1 class="text-2xl lg:text-3xl font-extrabold text-gray-900 mb-4 leading-snug"><%= product.name %></h1>
+
+          <!-- Price Box -->
+          <div class="bg-orange-50/60 border border-orange-100 p-4 rounded-2xl mb-6 flex items-baseline gap-4">
+            <span id="display-sale-price" class="text-3xl font-black text-red-600"><%= formatCurrency(product.sale_price) %></span>
+            <span id="display-orig-price" class="text-base text-gray-400 price-slash"><%= formatCurrency(product.original_price) %></span>
+            <span id="display-discount" class="ml-auto bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
+              GIẢM <%= Math.round((1 - product.sale_price / product.original_price) * 100) %>%
+            </span>
+          </div>
+
+          <!-- Quick Trust Badges -->
+          <div class="flex items-center gap-3 mb-6">
+            <div class="flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-gray-100 text-sm">
+              <i class="fas fa-truck text-indigo-500"></i>
+              <span class="font-semibold">Miễn phí giao hàng toàn quốc</span>
+            </div>
+            <div class="flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-gray-100 text-sm">
+              <i class="fas fa-undo text-emerald-500"></i>
+              <span class="font-semibold">Đổi trả 30 ngày miễn phí</span>
+            </div>
+            <div class="flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-gray-100 text-sm">
+              <i class="fab fa-rocketchat text-blue-500"></i>
+              <a href="https://zalo.me/0838709126" target="_blank" class="font-semibold hover:underline">Hỗ trợ Zalo 1-1</a>
+            </div>
+          </div>
+
+          <% if (product.variants && product.variants.length > 0) { %>
+          <!-- Variant Selection Section -->
+          <div class="mb-6 bg-white p-4 rounded-2xl border border-gray-200">
+            <label class="block text-xs font-bold text-gray-900 mb-2.5 flex items-center gap-1.5 uppercase tracking-wide">
+              <i class="fas fa-tags text-orange-500"></i> Chọn phân loại sản phẩm:
+            </label>
+            <div class="flex flex-wrap gap-2.5" id="variant-selector-group">
+              <% product.variants.forEach((v, idx) => { %>
+              <button 
+                type="button" 
+                onclick="selectVariant(<%= idx %>, '<%= v.name.replace(/'/g, "\\'") %>', <%= v.price %>, <%= v.original_price || product.original_price %>, '<%= v.image || '' %>')"
+                class="variant-btn border-2 rounded-xl px-3.5 py-2.5 text-xs font-bold transition flex items-center gap-2 cursor-pointer <%= idx === 0 ? 'border-orange-600 bg-orange-50 text-orange-700 shadow-sm' : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300' %>"
+                data-idx="<%= idx %>"
+              >
+                <span><%= v.name %></span>
+                <span class="text-[11px] font-extrabold <%= idx === 0 ? 'text-red-600' : 'text-gray-500' %>"><%= formatCurrency(v.price) %></span>
+              </button>
+              <% }) %>
+            </div>
+          </div>
+          <% } %>
+
+          <!-- Direct buy perk highlight -->
+          <div class="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-2xl p-4 mb-6">
+            <div class="flex items-center gap-2 text-amber-900 font-bold text-sm mb-1">
+              <i class="fas fa-bolt text-amber-500"></i> XÁC NHẬN ĐƠN HÀNG TỰ ĐỘNG 24/7
+            </div>
+            <p class="text-xs text-amber-800 leading-relaxed">
+              Chọn thanh toán chuyển khoản qua QR Code để đơn được hệ thống duyệt tự động 24/7 ngay tức thì. Với đơn COD, shop sẽ liên hệ gọi điện xác nhận nhanh trong ngày và đóng gói gửi đi liền!
+            </p>
+          </div>
+
+          <!-- Summary Bullet Points -->
+          <ul class="space-y-2 text-sm text-gray-700 mb-6">
+            <% product.highlights.forEach(h => { %>
+            <li class="flex items-center gap-2">
+              <i class="fas fa-check-circle text-emerald-500"></i> <%= h %>
+            </li>
+            <% }) %>
+          </ul>
+        </div>
+
+        <!-- Quantity & Buy Buttons -->
+        <div class="border-t border-gray-100 pt-6">
+          <div class="flex items-center gap-4 mb-6">
+            <span class="text-sm font-semibold text-gray-700">Số lượng:</span>
+            <div class="flex items-center border border-gray-300 rounded-xl overflow-hidden bg-gray-50">
+              <button onclick="changeQty(-1)" class="px-3 py-2 text-gray-600 hover:bg-gray-200 font-bold">-</button>
+              <input id="qty-input" type="number" value="1" min="1" max="99" class="w-12 text-center bg-transparent font-bold text-sm focus:outline-none">
+              <button onclick="changeQty(1)" class="px-3 py-2 text-gray-600 hover:bg-gray-200 font-bold">+</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="addToCartDetail(<%= product.id %>)" class="bg-orange-100 text-orange-700 hover:bg-orange-200 font-bold py-4 rounded-2xl text-sm transition flex items-center justify-center gap-2">
+              <i class="fas fa-cart-plus text-lg"></i> Thêm Giỏ Hàng
+            </button>
+            <button onclick="buyNowDetail(<%= product.id %>)" class="gradient-cta text-white font-extrabold py-4 rounded-2xl text-sm shadow-lg hover:opacity-95 transition flex items-center justify-center gap-2">
+              <i class="fas fa-bolt text-lg"></i> MUA NGAY COD / CK
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Videos Showcase Section -->
+    <% if (product.videos && product.videos.length > 0) { %>
+    <div class="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-200 mb-12">
+      <div class="flex items-center justify-between mb-6 pb-3 border-b border-gray-100">
+        <div>
+          <h2 class="text-xl font-extrabold text-gray-900 flex items-center gap-2">
+            <i class="fas fa-play-circle text-purple-600"></i> Video Trải Nghiệm & Đánh Giá Thực Tế
+          </h2>
+          <p class="text-xs text-gray-500 mt-1">Video quay trực tiếp từ Shop và trải nghiệm thực tế của khách hàng</p>
+        </div>
+        <span class="bg-purple-100 text-purple-700 font-bold text-xs px-3 py-1 rounded-full"><%= product.videos.length %> Video</span>
+      </div>
+
+      <div class="vertical-scroll">
+        <% product.videos.forEach(v => { %>
+        <div class="vertical-video-item">
+          <div>
+            <% if (v.url.includes('youtube.com') || v.url.includes('youtu.be')) { %>
+              <iframe src="<%= v.url %>" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <% } else { %>
+              <video src="<%= v.url %>" controls playsinline muted loop preload="metadata"></video>
+            <% } %>
+          </div>
+        </div>
+        <% }) %>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Product Description -->
+    <div class="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-200 mb-12">
+      <h2 class="text-xl font-bold text-gray-900 mb-6 pb-3 border-b border-gray-100 flex items-center gap-2">
+        <i class="fas fa-file-alt text-orange-500"></i> Mô Tả Chi Tiết Sản Phẩm
+      </h2>
+      <div class="prose max-w-none text-gray-700 leading-relaxed space-y-4">
+        <%- product.description %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sticky Mobile Quick Buy Bar -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur border-t border-gray-200 p-3 shadow-2xl flex items-center gap-3">
+  <div class="flex-1 min-w-0">
+    <span class="block text-[10px] text-gray-500 font-semibold truncate"><%= product.name %></span>
+    <div class="flex items-baseline gap-1.5">
+      <span class="font-extrabold text-red-600 text-base leading-none"><%= formatCurrency(product.sale_price) %></span>
+      <span class="text-[10px] text-gray-400 price-slash"><%= formatCurrency(product.original_price) %></span>
+    </div>
+  </div>
+  <button onclick="addToCartDetail(<%= product.id %>)" class="bg-orange-100 text-orange-700 font-bold p-3 rounded-xl text-xs flex items-center justify-center active:scale-95 transition">
+    <i class="fas fa-cart-plus text-base"></i>
+  </button>
+  <button onclick="buyNowDetail(<%= product.id %>)" class="gradient-cta text-white font-extrabold px-5 py-3 rounded-xl text-xs shadow-md flex items-center gap-1.5 active:scale-95 transition">
+    <i class="fas fa-bolt"></i> MUA NGAY
+  </button>
+</div>
+
+<script>
+  let selectedVariant = <%- (product.variants && product.variants.length > 0) ? JSON.stringify(product.variants[0]) : 'null' %>;
+
+  function selectVariant(idx, name, price, originalPrice, image) {
+    selectedVariant = { name, price, original_price: originalPrice, image };
+
+    const salePriceEl = document.getElementById('display-sale-price');
+    const origPriceEl = document.getElementById('display-orig-price');
+    const discountEl = document.getElementById('display-discount');
+
+    if (salePriceEl) salePriceEl.textContent = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+    if (origPriceEl) origPriceEl.textContent = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(originalPrice);
+    if (discountEl && originalPrice > 0) {
+      const pct = Math.round((1 - price / originalPrice) * 100);
+      discountEl.textContent = `GIẢM ${pct}%`;
+    }
+
+    if (image) {
+      const mainImg = document.getElementById('main-image');
+      if (mainImg) mainImg.src = image;
+    }
+
+    document.querySelectorAll('.variant-btn').forEach((btn, i) => {
+      if (i === idx) {
+        btn.className = 'variant-btn border-2 rounded-xl px-3.5 py-2.5 text-xs font-bold transition flex items-center gap-2 cursor-pointer border-orange-600 bg-orange-50 text-orange-700 shadow-sm';
+      } else {
+        btn.className = 'variant-btn border-2 rounded-xl px-3.5 py-2.5 text-xs font-bold transition flex items-center gap-2 cursor-pointer border-gray-200 bg-white text-gray-700 hover:border-gray-300';
+      }
+    });
+  }
+
+  function openLightbox(src) {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 cursor-pointer';
+    modal.onclick = () => modal.remove();
+    modal.innerHTML = `<img src="${src}" class="max-w-full max-h-[90vh] rounded-2xl shadow-2xl object-contain">`;
+    document.body.appendChild(modal);
+  }
+
+  function changeImage(src) {
+    document.getElementById('main-image').src = src;
+  }
+
+  function changeQty(delta) {
+    const input = document.getElementById('qty-input');
+    let val = parseInt(input.value) + delta;
+    if (val < 1) val = 1;
+    input.value = val;
+  }
+
+  async function addToCartDetail(productId) {
+    const qty = parseInt(document.getElementById('qty-input').value) || 1;
+    const variantName = selectedVariant ? selectedVariant.name : '';
+    const variantPrice = selectedVariant ? selectedVariant.price : null;
+    const variantImage = selectedVariant ? selectedVariant.image : null;
+
+    try {
+      const res = await fetch('/cart/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, quantity: qty, variantName, variantPrice, variantImage })
+      });
+      const data = await res.json();
+      if (data.success) {
+        updateCartBadge(data.cartCount);
+        showToast('Đã thêm phân loại vào giỏ hàng!');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function buyNowDetail(productId) {
+    const qty = parseInt(document.getElementById('qty-input').value) || 1;
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/cart/buy-now';
+
+    const pInput = document.createElement('input');
+    pInput.type = 'hidden';
+    pInput.name = 'productId';
+    pInput.value = productId;
+    form.appendChild(pInput);
+
+    const qInput = document.createElement('input');
+    qInput.type = 'hidden';
+    qInput.name = 'quantity';
+    qInput.value = qty;
+    form.appendChild(qInput);
+
+    if (selectedVariant) {
+      const vNameInput = document.createElement('input');
+      vNameInput.type = 'hidden';
+      vNameInput.name = 'variantName';
+      vNameInput.value = selectedVariant.name;
+      form.appendChild(vNameInput);
+
+      const vPriceInput = document.createElement('input');
+      vPriceInput.type = 'hidden';
+      vPriceInput.name = 'variantPrice';
+      vPriceInput.value = selectedVariant.price;
+      form.appendChild(vPriceInput);
+
+      if (selectedVariant.image) {
+        const vImgInput = document.createElement('input');
+        vImgInput.type = 'hidden';
+        vImgInput.name = 'variantImage';
+        vImgInput.value = selectedVariant.image;
+        form.appendChild(vImgInput);
+      }
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+  }
+</script>
+
+<%- include('../partials/footer') %>

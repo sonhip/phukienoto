@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <meta name="description" content="SmartLifeHub - Phụ kiện ô tô chính hãng, giá tại kho, giao hàng toàn quốc. Mua trực tiếp không qua sàn, tiết kiệm hơn!">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    .gradient-hero { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%); }
+    .gradient-cta { background: linear-gradient(135deg, #f97316 0%, #ef4444 100%); }
+    .gradient-trust { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
+    .card-hover { transition: all 0.3s ease; }
+    .card-hover:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+    .badge-pulse { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+    .price-slash { text-decoration: line-through; }
+    .scroll-smooth { scroll-behavior: smooth; }
+    .toast { animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s; }
+    @keyframes slideIn { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+    .sticky-cart { position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; }
+  </style>
+</head>
+<body class="bg-gray-50 scroll-smooth">
+  <!-- Top Bar -->
+  <div class="bg-gradient-to-r from-orange-500 to-red-500 text-white text-center py-2 text-sm font-medium">
+    <i class="fas fa-fire mr-1"></i> Mua trực tiếp tại web - Giá GỐC tại kho - Không qua sàn, TIẾT KIỆM hơn!
+    <i class="fas fa-fire ml-1"></i>
+  </div>
+
+  <!-- Header -->
+  <header class="bg-white shadow-sm sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2">
+        <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+          <i class="fas fa-car text-white text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-gray-900 leading-tight">SmartLifeHub</h1>
+          <p class="text-[10px] text-gray-500 -mt-1">Phụ Kiện Ô Tô Chính Hãng</p>
+        </div>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+        <a href="/" class="hover:text-orange-500 transition">Trang Chủ</a>
+        <a href="/#products" class="hover:text-orange-500 transition">Sản Phẩm</a>
+        <a href="/why-buy-direct" class="hover:text-orange-500 transition">Tại Sao Mua Ở Đây?</a>
+        <a href="/tracking" class="hover:text-orange-500 transition">Tra Cứu Đơn</a>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <a href="/tracking" class="text-gray-500 hover:text-orange-500 transition md:hidden">
+          <i class="fas fa-search text-lg"></i>
+        </a>
+        <a href="/cart" class="relative text-gray-700 hover:text-orange-500 transition">
+          <i class="fas fa-shopping-cart text-xl"></i>
+          <% if (cartCount > 0) { %>
+          <span id="cart-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center badge-pulse"><%= cartCount %></span>
+          <% } else { %>
+          <span id="cart-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
+          <% } %>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast notification -->
+  <div id="toast" class="fixed top-20 right-4 z-50 hidden">
+    <div class="bg-emerald-500 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 toast">
+      <i class="fas fa-check-circle"></i>
+      <span id="toast-message">Đã thêm vào giỏ hàng!</span>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main>
+    <%- body %>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-300 mt-16">
+    <div class="max-w-7xl mx-auto px-4 py-12">
+      <div class="grid md:grid-cols-3 gap-8">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+              <i class="fas fa-car text-white"></i>
+            </div>
+            <div>
+              <h3 class="text-white font-bold text-lg">SmartLifeHub</h3>
+              <p class="text-xs text-gray-400">Phụ Kiện Ô Tô Chính Hãng</p>
+            </div>
+          </div>
+          <p class="text-sm text-gray-400">Chuyên cung cấp phụ kiện ô tô chính hãng, giá tại kho. Mua trực tiếp không qua sàn, tiết kiệm chi phí cho khách hàng.</p>
+        </div>
+        <div>
+          <h4 class="text-white font-semibold mb-4">Liên Kết</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="/" class="hover:text-orange-400 transition">Trang Chủ</a></li>
+            <li><a href="/#products" class="hover:text-orange-400 transition">Sản Phẩm</a></li>
+            <li><a href="/tracking" class="hover:text-orange-400 transition">Tra Cứu Đơn Hàng</a></li>
+            <li><a href="/why-buy-direct" class="hover:text-orange-400 transition">Tại Sao Mua Ở Đây?</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-white font-semibold mb-4">Hỗ Trợ Khách Hàng</h4>
+          <ul class="space-y-2 text-sm">
+            <li><i class="fas fa-phone mr-2 text-orange-400"></i> Hotline: 0123.456.789</li>
+            <li><i class="fas fa-envelope mr-2 text-orange-400"></i> support@smartlifehub.vn</li>
+            <li><i class="fas fa-clock mr-2 text-orange-400"></i> 8:00 - 21:00 (T2 - CN)</li>
+            <li><i class="fas fa-map-marker-alt mr-2 text-orange-400"></i> TP. Hồ Chí Minh</li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-500">
+        © 2024 SmartLifeHub. Tất cả quyền được bảo lưu.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-message');
+      toastMsg.textContent = message;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+
+    function updateCartBadge(count) {
+      const badge = document.getElementById('cart-badge');
+      if (count > 0) {
+        badge.textContent = count;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    async function addToCart(productId, quantity = 1) {
+      try {
+        const res = await fetch('/cart/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId, quantity })
+        });
+        const data = await res.json();
+        if (data.success) {
+          updateCartBadge(data.cartCount);
+          showToast('Đã thêm vào giỏ hàng!');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function buyNow(productId) {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/cart/buy-now';
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'productId';
+      input.value = productId;
+      form.appendChild(input);
+      document.body.appendChild(form);
+      form.submit();
+    }
+  </script>
+</body>
+</html>

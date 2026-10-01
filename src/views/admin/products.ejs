@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="shortcut icon" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>* { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <!-- Top Admin Navbar -->
+  <header class="bg-gray-900 text-white sticky top-0 z-30 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 bg-orange-500 rounded-xl flex items-center justify-center font-black">
+            <i class="fas fa-car"></i>
+          </div>
+          <div>
+            <h1 class="text-base font-bold leading-none">SmartLifeHub Admin</h1>
+            <p class="text-[10px] text-gray-400">Quản Lý Sản Phẩm Mẫu</p>
+          </div>
+        </div>
+
+        <nav class="hidden md:flex items-center gap-2">
+          <a href="/admin" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-300 hover:bg-gray-800 hover:text-white transition">
+            <i class="fas fa-shopping-bag mr-1"></i> Xử Lý Đơn
+          </a>
+          <a href="/admin/analytics" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-300 hover:bg-gray-800 hover:text-white transition">
+            <i class="fas fa-chart-pie mr-1"></i> Báo Cáo Doanh Thu
+          </a>
+          <a href="/admin/products" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-500 text-white">
+            <i class="fas fa-box-open mr-1"></i> Quản Lý Sản Phẩm
+          </a>
+          <a href="/admin/media" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-300 hover:bg-gray-800 hover:text-white transition">
+            <i class="fas fa-folder-open mr-1"></i> Thư Viện Media
+          </a>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <a href="/" target="_blank" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold px-3 py-2 rounded-lg transition">
+          <i class="fas fa-external-link-alt mr-1"></i> Xem Web
+        </a>
+        <a href="/admin/logout" class="text-xs bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-2 rounded-lg transition">
+          <i class="fas fa-sign-out-alt mr-1"></i> Đăng Xuất
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <% if (typeof deleted !== 'undefined' && deleted) { %>
+    <div class="bg-red-500 text-white font-bold p-4 rounded-2xl mb-6 shadow-md flex items-center justify-between">
+      <span><i class="fas fa-check-circle mr-2"></i> Đã xóa sản phẩm khỏi hệ thống thành công!</span>
+    </div>
+    <% } %>
+
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-2xl font-black text-gray-900">Danh Sách Sản Phẩm</h2>
+        <p class="text-xs text-gray-500 mt-1">Admin có thể chỉnh sửa thông tin, phân loại, giá, danh sách video, hình ảnh, hoặc xóa sản phẩm khỏi hệ thống.</p>
+      </div>
+      <a href="/admin/product/new" class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow transition flex items-center gap-2">
+        <i class="fas fa-plus"></i> Tạo sản phẩm
+      </a>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="grid md:grid-cols-2 gap-6">
+      <% products.forEach(p => { %>
+      <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col justify-between hover:shadow-md transition">
+        <div>
+          <div class="flex gap-4 mb-4">
+            <div class="w-24 h-24 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0 border border-gray-200">
+              <img src="<%= p.images[0] || '/images/products/camera-4k-1.jpg' %>" alt="<%= p.name %>" class="w-full h-full object-cover">
+            </div>
+            <div class="flex-grow">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-[10px] font-extrabold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">ID: #<%= p.id %></span>
+                <% if (p.badge) { %>
+                <span class="text-[10px] font-bold bg-red-100 text-red-600 px-2 py-0.5 rounded-full"><%= p.badge %></span>
+                <% } %>
+              </div>
+              <h3 class="font-bold text-gray-900 line-clamp-2 text-base mb-2"><%= p.name %></h3>
+              <div class="flex items-baseline gap-2">
+                <span class="font-black text-red-600 text-lg"><%= formatCurrency(p.sale_price) %></span>
+                <span class="text-xs text-gray-400 price-slash"><%= formatCurrency(p.original_price) %></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 py-3 border-y border-gray-100 text-center text-xs mb-4">
+            <div class="bg-gray-50 p-2 rounded-lg">
+              <span class="block text-gray-400 text-[10px]">Hình Ảnh</span>
+              <span class="font-bold text-gray-800"><%= p.images.length %> ảnh</span>
+            </div>
+            <div class="bg-gray-50 p-2 rounded-lg">
+              <span class="block text-gray-400 text-[10px]">Video</span>
+              <span class="font-bold text-purple-600"><%= p.videos.length %> video</span>
+            </div>
+            <div class="bg-gray-50 p-2 rounded-lg">
+              <span class="block text-gray-400 text-[10px]">Đánh Giá</span>
+              <span class="font-bold text-emerald-600"><%= p.reviews.length %> review</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 gap-2">
+          <a href="/product/<%= p.slug %>" target="_blank" class="text-xs text-gray-600 hover:text-orange-600 font-semibold flex items-center gap-1">
+            <i class="fas fa-eye"></i> Xem trang
+          </a>
+          <div class="flex items-center gap-2">
+            <form action="/admin/product/<%= p.id %>/delete" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm `<%= p.name.replace(/'/g, "\\'") %>` không?')" class="inline">
+              <button type="submit" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-3 py-2 rounded-xl text-xs border border-red-200 transition flex items-center gap-1">
+                <i class="fas fa-trash-alt"></i> Xóa
+              </button>
+            </form>
+            <a href="/admin/product/<%= p.id %>/edit" class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-4 py-2 rounded-xl text-xs shadow transition flex items-center gap-1">
+              <i class="fas fa-edit"></i> Chỉnh Sửa
+            </a>
+          </div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+  </main>
+</body>
+</html>

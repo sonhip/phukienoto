@@ -1,0 +1,131 @@
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-300 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 py-12">
+      <div class="grid md:grid-cols-3 gap-8">
+        <div>
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
+              <i class="fas fa-car text-white"></i>
+            </div>
+            <div>
+              <h3 class="text-white font-bold text-lg">SmartLifeHub</h3>
+              <p class="text-xs text-gray-400">Phụ Kiện Ô Tô Giá Tại Kho</p>
+            </div>
+          </div>
+          <p class="text-sm text-gray-400 leading-relaxed">Chuyên cung cấp phụ kiện ô tô chính hãng, giá tại kho. Mua trực tiếp không qua sàn TMĐT, tiết kiệm chi phí cho khách hàng.</p>
+        </div>
+        <div>
+          <h4 class="text-white font-semibold mb-4">Liên Kết Nhanh</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="/" class="hover:text-orange-400 transition"><i class="fas fa-home mr-2 w-4"></i>Trang Chủ</a></li>
+            <li><a href="/#products" class="hover:text-orange-400 transition"><i class="fas fa-box mr-2 w-4"></i>Sản Phẩm</a></li>
+            <li><a href="/tracking" class="hover:text-orange-400 transition"><i class="fas fa-search mr-2 w-4"></i>Tra Cứu Đơn Hàng</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-white font-semibold mb-4">Hỗ Trợ Khách Hàng</h4>
+          <ul class="space-y-3 text-sm">
+            <li class="flex items-center gap-2">
+              <i class="fas fa-phone text-orange-400 w-4"></i> Hotline / Zalo: 
+              <a href="tel:0838709126" class="text-white font-extrabold hover:text-orange-400 transition">0838.709.126</a>
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="fas fa-comment-dots text-blue-400 w-4"></i> Hỗ trợ Zalo 1-1: 
+              <a href="https://zalo.me/0838709126" target="_blank" class="text-blue-400 font-bold hover:underline">0838709126</a>
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="fas fa-envelope text-orange-400 w-4"></i> 
+              <a href="mailto:smartlifehub.work@gmail.com" class="text-white hover:text-orange-400 transition">smartlifehub.work@gmail.com</a>
+            </li>
+            <li class="flex items-center gap-2"><i class="fas fa-clock text-orange-400 w-4"></i> 8:00 - 21:00 (T2 - CN)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-500">
+        © 2024 SmartLifeHub. Tất cả quyền được bảo lưu.
+      </div>
+    </div>
+  </footer>
+
+  <!-- Floating Contact Buttons (Zalo & Phone) -->
+  <div class="fixed bottom-20 right-4 z-40 flex flex-col gap-3">
+    <!-- Zalo Button -->
+    <a href="https://zalo.me/0838709126" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-2xl transition transform hover:scale-110 relative group p-1.5" title="Chat Zalo 0838709126">
+      <img src="/images/zalo-logo.png" alt="Zalo 0838709126" class="w-8 h-8 object-contain rounded-full">
+      <span class="absolute -top-1 -right-1 flex h-3 w-3">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+      </span>
+    </a>
+    <!-- Hotline Call Button -->
+    <a href="tel:0838709126" class="bg-emerald-600 hover:bg-emerald-700 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-2xl transition transform hover:scale-110" title="Gọi Hotline 0838709126">
+      <i class="fas fa-phone-alt text-lg"></i>
+    </a>
+  </div>
+
+  <script>
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-message');
+      toastMsg.textContent = message || 'Đã thêm vào giỏ hàng!';
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+
+    function updateCartBadge(count) {
+      const badge = document.getElementById('cart-badge');
+      if (count > 0) {
+        badge.textContent = count;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    async function addToCart(productId, quantity = 1) {
+      try {
+        const res = await fetch('/cart/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId, quantity })
+        });
+        const data = await res.json();
+        if (data.success) {
+          updateCartBadge(data.cartCount);
+          showToast('Đã thêm vào giỏ hàng!');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function buyNow(productId) {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/cart/buy-now';
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'productId';
+      input.value = productId;
+      form.appendChild(input);
+      document.body.appendChild(form);
+      form.submit();
+    }
+
+    // Scroll reveal observer
+    document.addEventListener('DOMContentLoaded', () => {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1 });
+
+      document.querySelectorAll('.reveal-on-scroll').forEach(el => {
+        observer.observe(el);
+      });
+    });
+  </script>
+</body>
+</html>

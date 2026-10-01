@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <header class="bg-gray-900 text-white sticky top-0 z-30 shadow-md">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/admin/products" class="text-xs bg-gray-800 hover:bg-gray-700 font-bold px-3 py-2 rounded-lg transition">
+        <i class="fas fa-arrow-left mr-1"></i> Quay lại sản phẩm
+      </a>
+      <h1 class="text-base font-bold">Tạo Sản Phẩm Mới</h1>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-8">
+    <% if (error) { %>
+    <div class="bg-red-500 text-white font-bold p-4 rounded-2xl mb-6"><%= error %></div>
+    <% } %>
+
+    <form action="/admin/product/new" method="POST" enctype="multipart/form-data" class="space-y-6">
+      <section class="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-200">
+        <h2 class="text-lg font-bold text-gray-900 mb-6 pb-2 border-b border-gray-100">
+          <i class="fas fa-info-circle text-orange-500 mr-2"></i>Thông Tin Cơ Bản
+        </h2>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Tên sản phẩm</label>
+            <input id="product-name" type="text" name="name" required class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-orange-500" oninput="syncSlug()">
+          </div>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-700 mb-1">Slug</label>
+              <input id="product-slug" type="text" name="slug" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-orange-500" placeholder="Tự sinh từ tên, có thể sửa tay">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-700 mb-1">Huy hiệu</label>
+              <input type="text" name="badge" placeholder="Bán chạy, Hàng mới..." class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-orange-500">
+            </div>
+          </div>
+          <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div><label class="block text-xs font-bold text-gray-700 mb-1">Giá niêm yết</label><input type="number" name="original_price" min="0" required class="w-full border border-gray-300 rounded-xl p-3 text-sm"></div>
+            <div><label class="block text-xs font-bold text-gray-700 mb-1">Giá bán</label><input type="number" name="sale_price" min="0" required class="w-full border border-gray-300 rounded-xl p-3 text-sm"></div>
+            <div><label class="block text-xs font-bold text-gray-700 mb-1">Số sao</label><input type="number" name="rating" min="0" max="5" step="0.1" value="0" class="w-full border border-gray-300 rounded-xl p-3 text-sm"></div>
+            <div><label class="block text-xs font-bold text-gray-700 mb-1">Thứ tự ưu tiên</label><input type="number" name="display_order" min="0" value="0" class="w-full border border-gray-300 rounded-xl p-3 text-sm"></div>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div><label class="block text-xs font-bold text-gray-700 mb-1">Số lượt đánh giá</label><input type="number" name="rating_count" min="0" value="0" class="w-full border border-gray-300 rounded-xl p-3 text-sm"></div>
+            <div><label class="block text-xs font-bold text-gray-700 mb-1">Đã bán</label><input type="number" name="sold_count" min="0" value="0" class="w-full border border-gray-300 rounded-xl p-3 text-sm"></div>
+          </div>
+          <div><label class="block text-xs font-bold text-gray-700 mb-1">Mô tả ngắn</label><textarea name="summary" rows="2" class="w-full border border-gray-300 rounded-xl p-3 text-sm"></textarea></div>
+          <div><label class="block text-xs font-bold text-gray-700 mb-1">Mô tả chi tiết</label><textarea name="description" rows="5" class="w-full border border-gray-300 rounded-xl p-3 text-sm"></textarea></div>
+          <div><label class="block text-xs font-bold text-gray-700 mb-1">Điểm nổi bật, mỗi dòng một điểm</label><textarea name="highlights_text" rows="4" class="w-full border border-gray-300 rounded-xl p-3 text-sm"></textarea></div>
+        </div>
+      </section>
+
+      <section class="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-200">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-lg font-bold text-gray-900"><i class="fas fa-photo-video text-purple-600 mr-2"></i>Media Sản Phẩm</h2>
+          <a href="/admin/media" target="_blank" class="text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold px-3 py-1.5 rounded-xl border border-purple-200 transition">
+            <i class="fas fa-folder-open mr-1"></i> Mở Drive Media
+          </a>
+        </div>
+        <p class="text-xs text-gray-500 mb-6">Bạn có thể chọn media từ Drive, upload qua web, hoặc chép file lớn trực tiếp vào VM rồi nhập URL.</p>
+        <div class="space-y-5">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-bold text-gray-700">Đường dẫn ảnh, mỗi dòng một URL</label>
+              <button type="button" onclick="openMediaPicker('images_text', 'text')" class="bg-orange-100 hover:bg-orange-200 text-orange-700 font-bold text-xs px-3 py-1 rounded-xl transition flex items-center gap-1">
+                <i class="fas fa-folder-open"></i> Chọn Từ Thư Viện Media
+              </button>
+            </div>
+            <textarea id="images_text" name="images_text" rows="4" placeholder="/uploads/products/ten-san-pham/1.jpg" class="w-full border border-gray-300 rounded-xl p-3 text-sm font-mono"></textarea>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-bold text-gray-700">Đường dẫn video, mỗi dòng: Tiêu đề | URL</label>
+              <button type="button" onclick="openMediaPicker('videos_text', 'video')" class="bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold text-xs px-3 py-1 rounded-xl transition flex items-center gap-1">
+                <i class="fas fa-folder-open"></i> Chọn Từ Thư Viện Media
+              </button>
+            </div>
+            <textarea id="videos_text" name="videos_text" rows="3" placeholder="Video hướng dẫn | /uploads/products/ten-san-pham/huong-dan.mp4" class="w-full border border-gray-300 rounded-xl p-3 text-sm font-mono"></textarea>
+          </div>
+          <div class="grid md:grid-cols-2 gap-5">
+            <div>
+              <label class="block text-xs font-bold text-gray-700 mb-1">Upload ảnh qua web</label>
+              <input type="file" name="image_files" accept="image/*" multiple class="w-full border border-gray-300 rounded-xl p-3 text-sm bg-gray-50">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-700 mb-1">Upload video qua web</label>
+              <input type="file" name="video_files" accept="video/*" multiple class="w-full border border-gray-300 rounded-xl p-3 text-sm bg-gray-50">
+            </div>
+          </div>
+          <p class="text-[11px] text-gray-400">Upload qua web giới hạn mặc định 100MB/file. File lớn hơn nên chép trực tiếp vào VM để tránh timeout.</p>
+        </div>
+      </section>
+
+      <div class="flex justify-end">
+        <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white font-extrabold px-7 py-3 rounded-xl shadow-lg transition">
+          <i class="fas fa-plus mr-2"></i> TẠO SẢN PHẨM
+        </button>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    function slugify(value) {
+      return (value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 120);
+    }
+    function syncSlug() {
+      const name = document.getElementById('product-name');
+      const slug = document.getElementById('product-slug');
+      if (!slug.dataset.edited || !slug.value) slug.value = slugify(name.value);
+    }
+    document.getElementById('product-slug').addEventListener('input', function () { this.dataset.edited = '1'; });
+  </script>
+  <%- include('../partials/media-picker') %>
+</body>
+</html>
