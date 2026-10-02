@@ -1,12 +1,11 @@
 #!/bin/bash
 
-echo "🚀 Deploying SmartLifeHub Phụ Kiện Ô Tô..."
+echo "Deploying SmartLifeHub..."
 
-# Update code
 git pull origin main
 
-# Build and start container
-docker-compose down
-docker-compose up -d --build
+# The image is built on the developer machine and published to Docker Hub.
+docker-compose pull
+docker-compose up -d --force-recreate
 
-echo "✅ Deployment successful! Web running on port 3000."
+echo "Deployment successful. Web is running on port 3000."

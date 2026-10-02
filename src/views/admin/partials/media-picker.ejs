@@ -225,6 +225,20 @@
     formData.append("dir", pickerCurrentDir);
     for (const f of files) formData.append("files", f);
 
+    const content = document.getElementById("picker-content");
+    content.innerHTML = `
+      <div class="py-20 flex flex-col items-center justify-center text-center">
+        <div class="w-16 h-16 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-3xl mb-4 animate-bounce">
+          <i class="fas fa-cloud-upload-alt"></i>
+        </div>
+        <p class="font-extrabold text-base text-gray-900">Đang tải ${files.length} file lên Cloudinary...</p>
+        <p class="text-xs text-gray-500 mt-1 max-w-sm">Vui lòng chờ trong giây lát, file đang được tối ưu và đẩy lên cloud storage.</p>
+        <div class="mt-5 flex items-center gap-2 text-xs font-bold text-orange-600 bg-orange-50 px-4 py-2 rounded-xl border border-orange-200">
+          <i class="fas fa-spinner fa-spin"></i> Đang xử lý tải lên...
+        </div>
+      </div>
+    `;
+
     try {
       const res = await fetch("/admin/api/media/upload", {
         method: "POST",
@@ -235,6 +249,7 @@
       loadPickerMedia(pickerCurrentDir);
     } catch (e) {
       alert(e.message || "Lỗi upload");
+      loadPickerMedia(pickerCurrentDir);
     }
   }
 

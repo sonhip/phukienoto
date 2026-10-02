@@ -1,10 +1,10 @@
 const db = require("./index");
 
-function seed() {
+async function seed() {
   console.log("🌱 Seeding database with 4 sample products...");
 
   // Clear existing data
-  db.exec("DELETE FROM products");
+  await db.exec("DELETE FROM products");
 
   const products = [
     {
@@ -361,8 +361,8 @@ function seed() {
     )
   `);
 
-  products.forEach((p) => {
-    stmt.run(
+  for (const p of products) {
+    await stmt.run(
       p.name,
       p.slug,
       p.summary,
@@ -381,13 +381,16 @@ function seed() {
       p.rating_count,
       p.sold_count,
     );
-  });
+  }
 
   console.log("✅ Seed completed! Exactly 4 sample products created.");
 }
 
 if (require.main === module) {
-  seed();
+  db.ready.then(seed).catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
 }
 
 module.exports = seed;

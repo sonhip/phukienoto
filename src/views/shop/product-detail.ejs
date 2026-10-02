@@ -79,20 +79,27 @@
 
           <% if (product.variants && product.variants.length > 0) { %>
           <!-- Variant Selection Section -->
-          <div class="mb-6 bg-white p-4 rounded-2xl border border-gray-200">
-            <label class="block text-xs font-bold text-gray-900 mb-2.5 flex items-center gap-1.5 uppercase tracking-wide">
-              <i class="fas fa-tags text-orange-500"></i> Chọn phân loại sản phẩm:
+          <div class="mb-6 bg-white p-4.5 rounded-2xl border border-gray-200 shadow-sm">
+            <label class="block text-xs font-extrabold text-gray-900 mb-3 flex items-center justify-between uppercase tracking-wide">
+              <span class="flex items-center gap-1.5"><i class="fas fa-tags text-orange-500"></i> Chọn phân loại sản phẩm:</span>
+              <span id="selected-variant-label" class="text-[11px] font-bold text-orange-600 bg-orange-50 px-2.5 py-0.5 rounded-lg border border-orange-200"><%= product.variants[0].name %></span>
             </label>
             <div class="flex flex-wrap gap-2.5" id="variant-selector-group">
               <% product.variants.forEach((v, idx) => { %>
+              <% const variantImg = v.image || (product.images && product.images[0]) || ''; %>
               <button 
                 type="button" 
                 onclick="selectVariant(<%= idx %>, '<%= v.name.replace(/'/g, "\\'") %>', <%= v.price %>, <%= v.original_price || product.original_price %>, '<%= v.image || '' %>')"
-                class="variant-btn border-2 rounded-xl px-3.5 py-2.5 text-xs font-bold transition flex items-center gap-2 cursor-pointer <%= idx === 0 ? 'border-orange-600 bg-orange-50 text-orange-700 shadow-sm' : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300' %>"
+                class="variant-btn border-2 rounded-2xl p-2 pr-3.5 text-xs font-bold transition flex items-center gap-2.5 cursor-pointer <%= idx === 0 ? 'border-orange-600 bg-orange-50 text-orange-800 shadow-md ring-1 ring-orange-400' : 'border-gray-200 bg-white text-gray-700 hover:border-orange-300' %>"
                 data-idx="<%= idx %>"
               >
-                <span><%= v.name %></span>
-                <span class="text-[11px] font-extrabold <%= idx === 0 ? 'text-red-600' : 'text-gray-500' %>"><%= formatCurrency(v.price) %></span>
+                <% if (variantImg) { %>
+                  <img src="<%= variantImg %>" alt="<%= v.name %>" class="variant-img w-9 h-9 rounded-xl object-cover border flex-shrink-0 transition <%= idx === 0 ? 'border-orange-500 ring-2 ring-orange-300' : 'border-gray-200' %>">
+                <% } %>
+                <div class="flex flex-col text-left">
+                  <span class="leading-tight text-xs font-extrabold"><%= v.name %></span>
+                  <span class="var-price-text text-[11px] font-black <%= idx === 0 ? 'text-red-600' : 'text-gray-500' %>"><%= formatCurrency(v.price) %></span>
+                </div>
               </button>
               <% }) %>
             </div>
@@ -206,6 +213,9 @@
   function selectVariant(idx, name, price, originalPrice, image) {
     selectedVariant = { name, price, original_price: originalPrice, image };
 
+    const labelEl = document.getElementById('selected-variant-label');
+    if (labelEl) labelEl.textContent = name;
+
     const salePriceEl = document.getElementById('display-sale-price');
     const origPriceEl = document.getElementById('display-orig-price');
     const discountEl = document.getElementById('display-discount');
@@ -223,10 +233,16 @@
     }
 
     document.querySelectorAll('.variant-btn').forEach((btn, i) => {
+      const img = btn.querySelector('.variant-img');
+      const priceText = btn.querySelector('.var-price-text');
       if (i === idx) {
-        btn.className = 'variant-btn border-2 rounded-xl px-3.5 py-2.5 text-xs font-bold transition flex items-center gap-2 cursor-pointer border-orange-600 bg-orange-50 text-orange-700 shadow-sm';
+        btn.className = 'variant-btn border-2 rounded-2xl p-2 pr-3.5 text-xs font-bold transition flex items-center gap-2.5 cursor-pointer border-orange-600 bg-orange-50 text-orange-800 shadow-md ring-1 ring-orange-400';
+        if (img) img.className = 'variant-img w-9 h-9 rounded-xl object-cover border flex-shrink-0 transition border-orange-500 ring-2 ring-orange-300';
+        if (priceText) priceText.className = 'var-price-text text-[11px] font-black text-red-600';
       } else {
-        btn.className = 'variant-btn border-2 rounded-xl px-3.5 py-2.5 text-xs font-bold transition flex items-center gap-2 cursor-pointer border-gray-200 bg-white text-gray-700 hover:border-gray-300';
+        btn.className = 'variant-btn border-2 rounded-2xl p-2 pr-3.5 text-xs font-bold transition flex items-center gap-2.5 cursor-pointer border-gray-200 bg-white text-gray-700 hover:border-orange-300';
+        if (img) img.className = 'variant-img w-9 h-9 rounded-xl object-cover border flex-shrink-0 transition border-gray-200';
+        if (priceText) priceText.className = 'var-price-text text-[11px] font-black text-gray-500';
       }
     });
   }

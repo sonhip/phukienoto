@@ -190,10 +190,13 @@
               <input type="number" class="var-original w-full border border-gray-300 rounded-lg p-2 text-xs font-semibold text-gray-400" value="<%= v.original_price || '' %>" placeholder="1390000">
             </div>
             <div class="md:col-span-2">
-              <label class="block text-[10px] text-gray-500 font-semibold mb-1">URL Ảnh phân loại (tùy chọn)</label>
-              <div class="flex items-center gap-1">
-                <input type="text" class="var-image w-full border border-gray-300 rounded-lg p-2 text-xs font-mono" value="<%= v.image || '' %>" placeholder="/uploads/products/...">
-                <button type="button" onclick="openMediaPicker(this.previousElementSibling, 'input')" class="p-2 text-xs bg-gray-100 hover:bg-gray-200 rounded-lg font-bold text-gray-700" title="Chọn từ Drive">
+              <label class="block text-[10px] text-gray-500 font-semibold mb-1">Ảnh phân loại (tùy chọn)</label>
+              <div class="flex items-center gap-1.5">
+                <% if (v.image) { %>
+                  <img src="<%= v.image %>" class="w-8 h-8 rounded-lg object-cover border border-gray-300 flex-shrink-0 shadow-sm">
+                <% } %>
+                <input type="text" class="var-image w-full border border-gray-300 rounded-lg p-2 text-xs font-mono" value="<%= v.image || '' %>" placeholder="URL ảnh Cloudinary">
+                <button type="button" onclick="openMediaPicker(this.previousElementSibling, 'input')" class="p-2 text-xs bg-gray-100 hover:bg-gray-200 rounded-lg font-bold text-gray-700 flex-shrink-0" title="Chọn từ Drive">
                   <i class="fas fa-folder-open"></i>
                 </button>
               </div>
@@ -405,7 +408,26 @@
       });
       document.getElementById('variants_json').value = JSON.stringify(variants);
     }
+
+    document.querySelector('form').addEventListener('submit', function() {
+      document.getElementById('form-loading-modal').classList.remove('hidden');
+    });
   </script>
-  <%- include('../partials/media-picker') %>
+
+  <!-- Form Submit Loading Modal -->
+  <div id="form-loading-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md hidden flex flex-col items-center justify-center text-white p-4">
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl flex flex-col items-center">
+      <div class="w-20 h-20 rounded-2xl bg-orange-500/20 text-orange-500 border border-orange-500/30 flex items-center justify-center text-4xl mb-5 animate-pulse">
+        <i class="fas fa-save"></i>
+      </div>
+      <h3 class="font-black text-lg text-white mb-1">Đang lưu sản phẩm & dữ liệu...</h3>
+      <p class="text-xs text-gray-400 mb-6">Hệ thống đang cập nhật thông tin sản phẩm và liên kết media. Vui lòng không đóng trình duyệt.</p>
+      <div class="flex items-center gap-2 text-xs font-bold text-orange-400 bg-orange-500/10 px-4 py-2.5 rounded-xl border border-orange-500/20">
+        <i class="fas fa-spinner fa-spin text-sm"></i> <span>Đang tiến hành lưu...</span>
+      </div>
+    </div>
+  </div>
+
+  <%- include('./partials/media-picker') %>
 </body>
 </html>

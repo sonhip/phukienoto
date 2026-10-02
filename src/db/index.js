@@ -1,85 +1,122 @@
-const Database = require("better-sqlite3");
-const path = require("path");
-const fs = require("fs");
+const { Pool } = require("pg");
 
-const dbDir = path.join(__dirname, "../../data");
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  host: process.env.PGHOST || process.env.DB_HOST || "localhost",
+  port: Number(process.env.PGPORT || process.env.DB_PORT || 5432),
+  database: process.env.PGDATABASE || process.env.DB_NAME || "smartlifehub",
+  user: process.env.PGUSER || process.env.DB_USER || "smartlifehub",
+  password: process.env.PGPASSWORD || process.env.DB_PASSWORD || "smartlifehub",
+  max: Number(process.env.PGPOOL_MAX || 10),
+});
+
+function toPostgresPlaceholders(sql) {
+  let index = 0;
+  return sql.replace(/\?/g, () => `$${++index}`);
 }
 
-const dbPath = path.join(dbDir, "smartlifehub.db");
-const db = new Database(dbPath);
+const db = {
+  pool,
+  ready: null,
+  prepare(sql) {
+    const text = toPostgresPlaceholders(sql);
+    return {
+      all: async (...params) => (await pool.query(text, params)).rows,
+      get: async (...params) => (await pool.query(text, params)).rows[0],
+      run: async (...params) => {
+        const queryText = /^(\s*INSERT\s)/i.test(text)
+          ? `${text.replace(/;?\s*$/, "")} RETURNING id`
+          : text;
+        const result = await pool.query(queryText, params);
+        return {
+          changes: result.rowCount,
+          lastInsertRowid: result.rows[0]?.id,
+        };
+      },
+    };
+  },
+  async exec(sql) {
+    return pool.query(sql);
+  },
+  async transaction(callback) {
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      const transactionDb = {
+        prepare(sql) {
+          const text = toPostgresPlaceholders(sql);
+          return {
+            all: async (...params) => (await client.query(text, params)).rows,
+            get: async (...params) =>
+              (await client.query(text, params)).rows[0],
+            run: async (...params) => {
+              const result = await client.query(text, params);
+              return { changes: result.rowCount };
+            },
+          };
+        },
+      };
+      const result = await callback(transactionDb);
+      await client.query("COMMIT");
+      return result;
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  },
+};
 
-// Enable WAL mode for better performance
-db.pragma("journal_mode = WAL");
-
-function initSchema() {
-  db.exec(`
+async function initSchema() {
+  await db.exec(`
     CREATE TABLE IF NOT EXISTS products (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id BIGSERIAL PRIMARY KEY,
       name TEXT NOT NULL,
       slug TEXT UNIQUE NOT NULL,
       summary TEXT,
       description TEXT,
       original_price INTEGER NOT NULL,
       sale_price INTEGER NOT NULL,
-      images TEXT, -- JSON Array
-      videos TEXT, -- JSON Array [{title, url}]
+      images TEXT,
+      videos TEXT,
       video_url TEXT,
       stock INTEGER DEFAULT 100,
-      highlights TEXT, -- JSON Array
-      specifications TEXT, -- JSON Object
-      reviews TEXT, -- JSON Array [{name, rating, comment, date, type, media_url}]
-      variants TEXT, -- JSON Array [{name, price, original_price, image}]
+      highlights TEXT,
+      specifications TEXT,
+      reviews TEXT,
+      variants TEXT,
       badge TEXT,
       rating REAL DEFAULT 4.9,
       rating_count INTEGER DEFAULT 120,
       sold_count INTEGER DEFAULT 350,
       display_order INTEGER DEFAULT 0,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS orders (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id BIGSERIAL PRIMARY KEY,
       order_code TEXT UNIQUE NOT NULL,
       customer_name TEXT NOT NULL,
       customer_phone TEXT NOT NULL,
       customer_address TEXT NOT NULL,
       customer_note TEXT,
-      payment_method TEXT NOT NULL, -- BANK_TRANSFER, COD
-      is_priority INTEGER DEFAULT 0, -- 1 = Priority Queue (Bank transfer)
-      payment_status TEXT DEFAULT 'PENDING', -- PENDING, PAID, REFUNDED
-      order_status TEXT DEFAULT 'PENDING', -- PRIORITY_QUEUE, PENDING, CONFIRMED, SHIPPING, DELIVERED, CANCELLED
+      payment_method TEXT NOT NULL,
+      is_priority INTEGER DEFAULT 0,
+      payment_status TEXT DEFAULT 'PENDING',
+      order_status TEXT DEFAULT 'PENDING',
       total_amount INTEGER NOT NULL,
-      items TEXT NOT NULL, -- JSON Array [{product_id, name, price, quantity, image}]
+      items TEXT NOT NULL,
       transfer_content TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
   `);
-
-  try {
-    db.exec("ALTER TABLE products ADD COLUMN videos TEXT;");
-  } catch (e) {
-    // Column already exists
-  }
-  try {
-    db.exec("ALTER TABLE products ADD COLUMN variants TEXT;");
-  } catch (e) {
-    // Column already exists
-  }
-  try {
-    db.exec("ALTER TABLE products ADD COLUMN display_order INTEGER DEFAULT 0;");
-  } catch (e) {
-    // Column already exists
-  }
 }
 
-initSchema();
-
-function migrateProductMediaPaths() {
+async function migrateProductMediaPaths() {
   const columns = ["images", "videos", "video_url", "reviews", "variants"];
-  const products = db
+  const products = await db
     .prepare(
       "SELECT id, images, videos, video_url, reviews, variants FROM products",
     )
@@ -96,10 +133,10 @@ function migrateProductMediaPaths() {
     return value;
   };
 
-  const update = db.prepare(
-    `UPDATE products SET ${columns.map((column) => `${column} = ?`).join(", ")} WHERE id = ?`,
-  );
-  const migrate = db.transaction(() => {
+  await db.transaction(async (transactionDb) => {
+    const update = transactionDb.prepare(
+      `UPDATE products SET ${columns.map((column) => `${column} = ?`).join(", ")} WHERE id = ?`,
+    );
     for (const product of products) {
       const values = columns.map((column) => {
         if (column === "video_url") return replacePath(product[column] || "");
@@ -121,24 +158,22 @@ function migrateProductMediaPaths() {
           return product[column] || (column === "video_url" ? "" : "[]");
         }
       });
-      if (values.some((value, index) => value !== product[columns[index]]))
-        update.run(...values, product.id);
+      if (values.some((value, index) => value !== product[columns[index]])) {
+        await update.run(...values, product.id);
+      }
     }
   });
-  migrate();
 }
 
-migrateProductMediaPaths();
-
-function autoAdvanceBankTransferOrders() {
+async function autoAdvanceBankTransferOrders() {
   try {
-    const result = db
+    const result = await db
       .prepare(
-        `UPDATE orders 
-         SET order_status = 'CONFIRMED', updated_at = CURRENT_TIMESTAMP 
-         WHERE payment_method = 'BANK_TRANSFER' 
-           AND order_status = 'PRIORITY_QUEUE' 
-           AND created_at <= datetime('now', '-5 minutes')`,
+        `UPDATE orders
+         SET order_status = 'CONFIRMED', updated_at = CURRENT_TIMESTAMP
+         WHERE payment_method = 'BANK_TRANSFER'
+           AND order_status = 'PRIORITY_QUEUE'
+           AND created_at <= CURRENT_TIMESTAMP - INTERVAL '5 minutes'`,
       )
       .run();
     if (result.changes > 0) {
@@ -152,5 +187,6 @@ function autoAdvanceBankTransferOrders() {
 }
 
 db.autoAdvanceBankTransferOrders = autoAdvanceBankTransferOrders;
+db.ready = initSchema().then(migrateProductMediaPaths);
 
 module.exports = db;

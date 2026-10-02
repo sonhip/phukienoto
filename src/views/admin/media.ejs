@@ -132,6 +132,15 @@
             <i class="fas fa-folder-plus text-amber-500"></i> Tạo Thư Mục
           </button>
 
+          <!-- Select All Button -->
+          <button
+            onclick="toggleSelectAll()"
+            class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1.5"
+            title="Chọn tất cả"
+          >
+            <i class="fas fa-check-square text-blue-500"></i> Chọn Tất Cả
+          </button>
+
           <!-- Upload Files Button -->
           <label
             class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-3.5 py-1.5 rounded-xl text-xs shadow transition cursor-pointer flex items-center gap-1.5"
@@ -354,8 +363,9 @@
           container.className =
             "bg-white rounded-2xl border border-gray-200 divide-y divide-gray-100 overflow-hidden";
           container.innerHTML = `
-          <div class="px-4 py-2.5 bg-gray-50 text-[11px] font-bold text-gray-500 grid grid-cols-12 gap-2 uppercase tracking-wider">
-            <div class="col-span-6">Tên mục</div>
+          <div class="px-4 py-2.5 bg-gray-50 text-[11px] font-bold text-gray-500 grid grid-cols-12 gap-2 uppercase tracking-wider items-center">
+            <div class="col-span-1 text-center"><input type="checkbox" onclick="toggleSelectAll()" title="Chọn tất cả" class="w-4 h-4 accent-orange-500 cursor-pointer"></div>
+            <div class="col-span-5">Tên mục</div>
             <div class="col-span-3">Dung lượng</div>
             <div class="col-span-3 text-right">Thao tác</div>
           </div>
@@ -370,16 +380,22 @@
 
         if (item.isFolder) {
           return `
-          <div onclick="toggleSelect('${item.relPath}', event)" ondblclick="loadMedia('${item.relPath}')" class="bg-white rounded-2xl p-4 border ${isSelected ? "border-orange-500 bg-orange-50/50 shadow-md" : "border-gray-200 hover:border-gray-300"} cursor-pointer transition group relative flex flex-col justify-between">
-            <div class="flex items-center justify-between mb-2">
+          <div onclick="loadMedia('${item.relPath}')" class="bg-white rounded-2xl p-4 border ${isSelected ? "border-orange-500 bg-orange-50/50 shadow-md" : "border-gray-200 hover:border-orange-400"} cursor-pointer transition group relative flex flex-col justify-between">
+            <div class="absolute top-2 left-2 z-10">
+              <input type="checkbox" ${isSelected ? "checked" : ""} onclick="event.stopPropagation(); toggleSelect('${item.relPath}', event)" class="w-4 h-4 text-orange-500 rounded accent-orange-500 cursor-pointer shadow-sm">
+            </div>
+            <div class="flex items-center justify-between mb-2 pl-6">
               <i class="fas fa-folder text-amber-400 text-3xl"></i>
-              <button onclick="event.stopPropagation(); deleteItem('${item.relPath}')" class="text-gray-400 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition text-xs">
+              <button onclick="event.stopPropagation(); deleteItem('${item.relPath}')" class="text-gray-400 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition text-xs" title="Xóa thư mục">
                 <i class="fas fa-trash"></i>
               </button>
             </div>
             <div>
-              <p class="font-bold text-xs text-gray-900 truncate" title="${item.name}">${item.name}</p>
-              <span class="text-[10px] text-gray-400">Thư mục</span>
+              <p class="font-bold text-xs text-gray-900 truncate flex items-center gap-1" title="${item.name}">
+                <span>${item.name}</span>
+                <i class="fas fa-chevron-right text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 transition"></i>
+              </p>
+              <span class="text-[10px] text-gray-400">Thư mục (Click mở)</span>
             </div>
           </div>
         `;
@@ -389,7 +405,12 @@
         const isVid = item.type === "video";
 
         return `
-        <div onclick="toggleSelect('${item.relPath}', event)" class="bg-white rounded-2xl border ${isSelected ? "border-orange-500 bg-orange-50/40 shadow-md ring-2 ring-orange-400" : "border-gray-200 hover:border-orange-300"} overflow-hidden cursor-pointer transition group flex flex-col justify-between">
+        <div onclick="toggleSelect('${item.relPath}', event)" class="bg-white rounded-2xl border ${isSelected ? "border-orange-500 bg-orange-50/40 shadow-md ring-2 ring-orange-400" : "border-gray-200 hover:border-orange-300"} overflow-hidden cursor-pointer transition group flex flex-col justify-between relative">
+          <!-- Top Left Checkbox -->
+          <div class="absolute top-2 left-2 z-10 bg-white/90 backdrop-blur-sm p-1 rounded-lg shadow-sm border border-gray-200 flex items-center justify-center">
+            <input type="checkbox" ${isSelected ? "checked" : ""} onclick="event.stopPropagation(); toggleSelect('${item.relPath}', event)" class="w-4 h-4 text-orange-500 rounded accent-orange-500 cursor-pointer">
+          </div>
+
           <div class="aspect-square bg-gray-900/5 relative overflow-hidden flex items-center justify-center">
             ${isImg ? `<img src="${item.url}" alt="${item.name}" class="w-full h-full object-cover">` : ""}
             ${isVid ? `<div class="text-purple-600 text-3xl"><i class="fas fa-file-video"></i></div><div class="absolute inset-0 bg-black/20 flex items-center justify-center text-white"><i class="fas fa-play-circle text-2xl"></i></div>` : ""}
@@ -424,15 +445,37 @@
       function renderListRow(item) {
         const isSelected = selectedRelPaths.has(item.relPath);
 
+        if (item.isFolder) {
+          return `
+          <div onclick="loadMedia('${item.relPath}')" class="px-4 py-3 grid grid-cols-12 gap-2 items-center text-xs hover:bg-amber-50/60 cursor-pointer ${isSelected ? "bg-orange-50 font-bold" : ""}">
+            <div class="col-span-1 text-center">
+              <input type="checkbox" ${isSelected ? "checked" : ""} onclick="event.stopPropagation(); toggleSelect('${item.relPath}', event)" class="w-4 h-4 text-orange-500 rounded accent-orange-500 cursor-pointer">
+            </div>
+            <div class="col-span-5 flex items-center gap-2.5 truncate font-bold text-gray-900">
+              <i class="fas fa-folder text-amber-400 text-lg"></i>
+              <span class="truncate">${item.name}</span>
+              <span class="text-[10px] text-orange-500 bg-orange-100 px-1.5 py-0.5 rounded-md font-semibold">Mở folder</span>
+            </div>
+            <div class="col-span-3 text-gray-400 text-[11px]">Thư mục</div>
+            <div class="col-span-3 text-right flex items-center justify-end gap-2">
+              <button onclick="event.stopPropagation(); deleteItem('${item.relPath}')" class="text-red-500 hover:text-red-700 text-xs"><i class="fas fa-trash"></i> Xóa</button>
+            </div>
+          </div>
+        `;
+        }
+
         return `
-        <div onclick="toggleSelect('${item.relPath}', event)" ondblclick="${item.isFolder ? `loadMedia('${item.relPath}')` : `openPreview('${item.url}', '${item.type}', '${item.name}')`}" class="px-4 py-3 grid grid-cols-12 gap-2 items-center text-xs hover:bg-orange-50/50 cursor-pointer ${isSelected ? "bg-orange-50 font-bold" : ""}">
-          <div class="col-span-6 flex items-center gap-2.5 truncate">
-            <i class="fas ${item.isFolder ? "fa-folder text-amber-400" : item.type === "image" ? "fa-image text-blue-500" : "fa-video text-purple-500"} text-base"></i>
+        <div onclick="toggleSelect('${item.relPath}', event)" ondblclick="openPreview('${item.url}', '${item.type}', '${item.name}')" class="px-4 py-3 grid grid-cols-12 gap-2 items-center text-xs hover:bg-orange-50/50 cursor-pointer ${isSelected ? "bg-orange-50 font-bold" : ""}">
+          <div class="col-span-1 text-center">
+            <input type="checkbox" ${isSelected ? "checked" : ""} onclick="event.stopPropagation(); toggleSelect('${item.relPath}', event)" class="w-4 h-4 text-orange-500 rounded accent-orange-500 cursor-pointer">
+          </div>
+          <div class="col-span-5 flex items-center gap-2.5 truncate">
+            <i class="fas ${item.type === "image" ? "fa-image text-blue-500" : "fa-video text-purple-500"} text-base"></i>
             <span class="truncate text-gray-900 font-medium">${item.name}</span>
           </div>
           <div class="col-span-3 text-gray-500 text-[11px]">${item.sizeFormatted}</div>
           <div class="col-span-3 text-right flex items-center justify-end gap-2">
-            ${!item.isFolder ? `<button onclick="event.stopPropagation(); copyUrl('${item.url}')" class="text-orange-600 hover:underline text-xs"><i class="fas fa-copy"></i> Copy</button>` : ""}
+            <button onclick="event.stopPropagation(); copyUrl('${item.url}')" class="text-orange-600 hover:underline text-xs"><i class="fas fa-copy"></i> Copy</button>
             <button onclick="event.stopPropagation(); deleteItem('${item.relPath}')" class="text-red-500 hover:text-red-700 text-xs"><i class="fas fa-trash"></i></button>
           </div>
         </div>
@@ -514,13 +557,23 @@
       // Upload Handler
       async function handleUpload(files) {
         if (!files || files.length === 0) return;
+        const modal = document.getElementById("upload-loading-modal");
+        const title = document.getElementById("upload-loading-title");
+        const desc = document.getElementById("upload-loading-desc");
+
+        if (title)
+          title.textContent = `Đang tải ${files.length} file lên Cloudinary...`;
+        if (desc)
+          desc.textContent =
+            "Vui lòng không đóng trình duyệt trong lúc file đang được đẩy lên đám mây.";
+        if (modal) modal.classList.remove("hidden");
+
         const formData = new FormData();
         formData.append("dir", currentDir);
         for (const f of files) {
           formData.append("files", f);
         }
 
-        showToast("Đang tải file lên media...");
         try {
           const res = await fetch("/admin/api/media/upload", {
             method: "POST",
@@ -528,10 +581,12 @@
           });
           const data = await res.json();
           if (data.error) throw new Error(data.error);
-          showToast("Tải lên media thành công!");
+          showToast("Tải lên Cloudinary thành công!");
           loadMedia(currentDir);
         } catch (err) {
           alert(err.message || "Lỗi upload media");
+        } finally {
+          if (modal) modal.classList.add("hidden");
         }
       }
 
@@ -539,6 +594,16 @@
       async function promptCreateFolder() {
         const folderName = prompt("Nhập tên thư mục mới:");
         if (!folderName || !folderName.trim()) return;
+
+        const modal = document.getElementById("upload-loading-modal");
+        const title = document.getElementById("upload-loading-title");
+        const desc = document.getElementById("upload-loading-desc");
+
+        if (title) title.textContent = `Đang tạo thư mục...`;
+        if (desc)
+          desc.textContent =
+            "Hệ thống đang khởi tạo thư mục mới trên Cloudinary.";
+        if (modal) modal.classList.remove("hidden");
 
         try {
           const res = await fetch("/admin/api/media/folder", {
@@ -555,12 +620,44 @@
           loadMedia(currentDir);
         } catch (err) {
           alert(err.message || "Lỗi tạo thư mục");
+        } finally {
+          if (modal) modal.classList.add("hidden");
         }
+      }
+
+      function toggleSelectAll() {
+        const search = (document.getElementById("search-input").value || "")
+          .toLowerCase()
+          .trim();
+        const filtered = mediaItems.filter((i) =>
+          i.name.toLowerCase().includes(search),
+        );
+
+        const allSelected = filtered.every((i) =>
+          selectedRelPaths.has(i.relPath),
+        );
+        if (allSelected) {
+          filtered.forEach((i) => selectedRelPaths.delete(i.relPath));
+        } else {
+          filtered.forEach((i) => selectedRelPaths.add(i.relPath));
+        }
+        updateBulkBar();
+        renderItems();
       }
 
       // Delete item
       async function deleteItem(relPath) {
-        if (!confirm(`Bạn có chắc muốn xóa: ${relPath}?`)) return;
+        if (!confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn mục này?`)) return;
+        const modal = document.getElementById("upload-loading-modal");
+        const title = document.getElementById("upload-loading-title");
+        const desc = document.getElementById("upload-loading-desc");
+
+        if (title) title.textContent = `Đang xóa mục...`;
+        if (desc)
+          desc.textContent =
+            "Hệ thống đang tiến hành xóa dữ liệu trên Cloudinary.";
+        if (modal) modal.classList.remove("hidden");
+
         try {
           const res = await fetch("/admin/api/media/delete", {
             method: "POST",
@@ -573,15 +670,45 @@
           loadMedia(currentDir);
         } catch (err) {
           alert(err.message || "Lỗi xóa mục");
+        } finally {
+          if (modal) modal.classList.add("hidden");
         }
       }
 
       async function deleteSelectedItems() {
-        if (!confirm(`Xóa ${selectedRelPaths.size} mục đã chọn?`)) return;
-        for (const relPath of selectedRelPaths) {
-          await deleteItem(relPath);
+        const count = selectedRelPaths.size;
+        if (count === 0) return;
+        if (
+          !confirm(`Bạn có chắc chắn muốn XÓA VĨNH VIỄN ${count} mục đã chọn?`)
+        )
+          return;
+
+        const modal = document.getElementById("upload-loading-modal");
+        const title = document.getElementById("upload-loading-title");
+        const desc = document.getElementById("upload-loading-desc");
+
+        if (title) title.textContent = `Đang xóa ${count} mục...`;
+        if (desc)
+          desc.textContent =
+            "Hệ thống đang tiến hành xóa hàng loạt dữ liệu trên Cloudinary.";
+        if (modal) modal.classList.remove("hidden");
+
+        try {
+          const res = await fetch("/admin/api/media/delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ relPaths: Array.from(selectedRelPaths) }),
+          });
+          const data = await res.json();
+          if (data.error) throw new Error(data.error);
+          showToast(`Đã xóa thành công ${count} mục!`);
+          clearSelection();
+          loadMedia(currentDir);
+        } catch (err) {
+          alert(err.message || "Lỗi xóa hàng loạt.");
+        } finally {
+          if (modal) modal.classList.add("hidden");
         }
-        clearSelection();
       }
 
       // Preview Modal
@@ -632,5 +759,37 @@
       // Initialize
       loadMedia("");
     </script>
+
+    <!-- Upload Loading Modal Overlay -->
+    <div
+      id="upload-loading-modal"
+      class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md hidden flex flex-col items-center justify-center text-white p-4"
+    >
+      <div
+        class="bg-gray-900 border border-gray-800 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl flex flex-col items-center"
+      >
+        <div
+          class="w-20 h-20 rounded-2xl bg-orange-500/20 text-orange-500 border border-orange-500/30 flex items-center justify-center text-4xl mb-5 animate-pulse"
+        >
+          <i class="fas fa-cloud-upload-alt"></i>
+        </div>
+        <h3
+          id="upload-loading-title"
+          class="font-black text-lg text-white mb-1"
+        >
+          Đang tải media lên Cloudinary...
+        </h3>
+        <p id="upload-loading-desc" class="text-xs text-gray-400 mb-6">
+          File đang được đẩy trực tiếp lên bộ nhớ đám mây Cloudinary. Vui lòng
+          không đóng trang này.
+        </p>
+        <div
+          class="flex items-center gap-2 text-xs font-bold text-orange-400 bg-orange-500/10 px-4 py-2.5 rounded-xl border border-orange-500/20"
+        >
+          <i class="fas fa-spinner fa-spin text-sm"></i>
+          <span id="upload-loading-status">Đang xử lý dữ liệu...</span>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

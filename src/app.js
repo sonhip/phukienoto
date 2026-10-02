@@ -46,14 +46,18 @@ const { formatCurrency, ORDER_STATUS_LABELS } = require("./utils/helpers");
 // Run 5-minute auto-advance for bank transfer orders on interval (every 30 seconds)
 setInterval(() => {
   if (typeof db.autoAdvanceBankTransferOrders === "function") {
-    db.autoAdvanceBankTransferOrders();
+    db.autoAdvanceBankTransferOrders().catch((error) =>
+      console.error("[Auto-Advance Error]", error),
+    );
   }
 }, 30000);
 
 app.use((req, res, next) => {
   // Also run auto-advance check on incoming requests
   if (typeof db.autoAdvanceBankTransferOrders === "function") {
-    db.autoAdvanceBankTransferOrders();
+    db.autoAdvanceBankTransferOrders().catch((error) =>
+      console.error("[Auto-Advance Error]", error),
+    );
   }
   res.locals.formatCurrency = formatCurrency;
   res.locals.ORDER_STATUS_LABELS = ORDER_STATUS_LABELS;
@@ -89,7 +93,14 @@ app.use((err, req, res, next) => {
     .render("error", { title: "Lỗi hệ thống", error: err.message });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 SmartLifeHub running at http://localhost:${PORT}`);
-  console.log(`📦 Admin panel: http://localhost:${PORT}/admin`);
-});
+db.ready
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`🚀 SmartLifeHub running at http://localhost:${PORT}`);
+      console.log(`📦 Admin panel: http://localhost:${PORT}/admin`);
+    });
+  })
+  .catch((error) => {
+    console.error("Unable to initialize PostgreSQL:", error);
+    process.exitCode = 1;
+  });
