@@ -1,9 +1,7 @@
-version: "3.8"
-
 services:
   web:
-    build: .
-    container_name: smartlifehub-web
+    image: sonhipp/phukienoto:v1.0.0
+    container_name: phukienoto-web
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -13,4 +11,4 @@ services:
     env_file:
       - .env
     environment:
-      - NODE_ENV=production
+      NODE_ENV: production

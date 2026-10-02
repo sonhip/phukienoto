@@ -3,12 +3,9 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 COPY . .
-
-# Run DB seed if needed
-RUN npm run db:seed
 
 EXPOSE 3000
 
