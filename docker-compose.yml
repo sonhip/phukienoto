@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   web:
     image: sonhipp/phukienoto:v1.0.0
