@@ -45,13 +45,14 @@ router.get("/product/:slug", async (req, res, next) => {
     product.reviews = JSON.parse(product.reviews || "[]");
     product.variants = JSON.parse(product.variants || "[]");
 
-    const otherProducts = await db
-      .prepare("SELECT * FROM products WHERE slug != ? LIMIT 4")
-      .all(req.params.slug)
-      .map((p) => ({
-        ...p,
-        images: JSON.parse(p.images || "[]"),
-      }));
+    const otherProducts = (
+      await db
+        .prepare("SELECT * FROM products WHERE slug != ? LIMIT 4")
+        .all(req.params.slug)
+    ).map((p) => ({
+      ...p,
+      images: JSON.parse(p.images || "[]"),
+    }));
 
     res.render("shop/product-detail", {
       title: `${product.name} - SmartLifeHub`,
