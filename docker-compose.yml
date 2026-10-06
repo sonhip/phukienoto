@@ -24,7 +24,7 @@ services:
       retries: 10
 
   web:
-    image: sonhipp/phukienoto:v1.0.1
+    image: sonhipp/phukienoto:v1.0.3
     container_name: phukienoto-web
     restart: unless-stopped
     depends_on:

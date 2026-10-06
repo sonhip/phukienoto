@@ -52,7 +52,7 @@ VM Ubuntu thong thuong dung `linux/amd64`, vi vay luon build dung platform nay:
 docker login
 docker buildx build \
   --platform linux/amd64 \
-  -t sonhipp/phukienoto:v1.0.1 \
+  -t sonhipp/phukienoto:v1.0.3 \
   --push .
 ```
 
