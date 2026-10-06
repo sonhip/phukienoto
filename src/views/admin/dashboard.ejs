@@ -141,12 +141,13 @@
               <th class="py-3.5 px-4">Tổng Tiền</th>
               <th class="py-3.5 px-4">Trạng Thái Xử Lý</th>
               <th class="py-3.5 px-4">Ngày Tạo</th>
+              <th class="py-3.5 px-4 text-right">Chi Tiết</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
             <% if (orders.length === 0) { %>
             <tr>
-              <td colspan="8" class="text-center py-8 text-gray-400">Không có đơn hàng nào matching</td>
+              <td colspan="9" class="text-center py-8 text-gray-400">Không có đơn hàng nào matching</td>
             </tr>
             <% } %>
 
@@ -214,6 +215,14 @@
               <!-- Date -->
               <td class="py-3.5 px-4 text-gray-400 text-[11px]">
                 <%= new Date(order.created_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) %>
+              </td>
+
+              <!-- Detail -->
+              <td class="py-3.5 px-4 text-right">
+                <a href="/admin/order/<%= order.id %>" class="inline-flex items-center justify-center gap-1.5 whitespace-nowrap bg-gray-900 hover:bg-orange-600 text-white font-bold px-3 py-2 rounded-lg text-xs transition">
+                  <i class="fas fa-eye"></i>
+                  Xem chi tiết
+                </a>
               </td>
             </tr>
             <% }) %>

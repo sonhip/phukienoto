@@ -495,12 +495,21 @@ router.get("/media", adminAuth, (req, res) => {
 // API: List Media Files & Folders
 router.get("/api/media/list", adminAuth, async (req, res) => {
   try {
-    const requestedDir = String(req.query.dir || "").trim();
+    const requestedDir = String(req.query.dir || "")
+      .trim()
+      .replace(/^\/+|\/+$/g, "")
+      .replace(/\/+/g, "/");
 
     if (isConfigured()) {
       const baseFolder = getFolder();
-      const folderPath = requestedDir
-        ? `${baseFolder}/${requestedDir.replace(/^\/+|\/+$/g, "")}`
+      const relativeDir =
+        requestedDir === baseFolder
+          ? ""
+          : requestedDir.startsWith(`${baseFolder}/`)
+            ? requestedDir.slice(baseFolder.length + 1)
+            : requestedDir;
+      const folderPath = relativeDir
+        ? `${baseFolder}/${relativeDir}`
         : baseFolder;
       const prefix = folderPath ? `${folderPath}/` : "";
 
@@ -532,7 +541,7 @@ router.get("/api/media/list", adminAuth, async (req, res) => {
       const items = [];
 
       for (const f of folders) {
-        const relPath = requestedDir ? `${requestedDir}/${f.name}` : f.name;
+        const relPath = relativeDir ? `${relativeDir}/${f.name}` : f.name;
         items.push({
           name: f.name,
           relPath,
@@ -551,8 +560,18 @@ router.get("/api/media/list", adminAuth, async (req, res) => {
       ];
 
       for (const r of allResources) {
+        if (!r.public_id.startsWith(prefix)) continue;
+
+        const publicIdInCurrentFolder = r.public_id.slice(prefix.length);
+        if (
+          !publicIdInCurrentFolder ||
+          publicIdInCurrentFolder.includes("/")
+        ) {
+          continue;
+        }
+
         const fileName =
-          r.public_id.split("/").pop() + (r.format ? `.${r.format}` : "");
+          publicIdInCurrentFolder + (r.format ? `.${r.format}` : "");
         items.push({
           name: fileName,
           relPath: r.public_id,
@@ -571,7 +590,7 @@ router.get("/api/media/list", adminAuth, async (req, res) => {
         return (b.mtime || "").localeCompare(a.mtime || "");
       });
 
-      const parts = requestedDir ? requestedDir.split("/").filter(Boolean) : [];
+      const parts = relativeDir ? relativeDir.split("/").filter(Boolean) : [];
       const breadcrumbs = [{ name: "Root (Cloudinary)", path: "" }];
       let currentAccumulated = "";
       for (const part of parts) {
@@ -582,7 +601,7 @@ router.get("/api/media/list", adminAuth, async (req, res) => {
       }
 
       return res.json({
-        currentDir: requestedDir,
+        currentDir: relativeDir,
         breadcrumbs,
         items,
       });
