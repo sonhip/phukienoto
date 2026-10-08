@@ -132,7 +132,7 @@ Tang image tag trong lenh build va trong `docker-compose.yml`, vi du:
 ```bash
 docker buildx build \
   --platform linux/amd64 \
-  -t sonhipp/phukienoto:v1.0.5 \
+  -t sonhipp/phukienoto:v1.0.6 \
   --push .
 ```
 
