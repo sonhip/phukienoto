@@ -1,7 +1,7 @@
   <!-- Footer -->
-  <footer class="bg-gray-900 text-gray-300 mt-auto">
-    <div class="max-w-7xl mx-auto px-4 py-12">
-      <div class="grid md:grid-cols-3 gap-8">
+  <footer class="bg-gray-900 text-gray-300 mt-auto pb-20 md:pb-0">
+    <div class="max-w-7xl mx-auto px-4 py-10 md:py-12">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
         <div>
           <div class="flex items-center gap-3 mb-4">
             <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
@@ -21,6 +21,23 @@
             <li><a href="/#products" class="hover:text-orange-400 transition"><i class="fas fa-box mr-2 w-4"></i>Sản Phẩm</a></li>
             <li><a href="/tracking" class="hover:text-orange-400 transition"><i class="fas fa-search mr-2 w-4"></i>Tra Cứu Đơn Hàng</a></li>
           </ul>
+        </div>
+        <div>
+          <h4 class="text-white font-semibold mb-4">Chuyển Trang</h4>
+          <div class="grid grid-cols-2 gap-2 text-xs font-bold">
+            <a href="/" class="rounded-xl bg-gray-800 hover:bg-orange-600 text-gray-200 hover:text-white px-3 py-3 transition flex items-center gap-2">
+              <i class="fas fa-house w-4"></i> Trang chủ
+            </a>
+            <a href="/#products" class="rounded-xl bg-gray-800 hover:bg-orange-600 text-gray-200 hover:text-white px-3 py-3 transition flex items-center gap-2">
+              <i class="fas fa-box-open w-4"></i> Sản phẩm
+            </a>
+            <a href="/cart" class="rounded-xl bg-gray-800 hover:bg-orange-600 text-gray-200 hover:text-white px-3 py-3 transition flex items-center gap-2">
+              <i class="fas fa-bag-shopping w-4"></i> Giỏ hàng
+            </a>
+            <a href="/why-buy-direct" class="rounded-xl bg-gray-800 hover:bg-orange-600 text-gray-200 hover:text-white px-3 py-3 transition flex items-center gap-2">
+              <i class="fas fa-circle-info w-4"></i> Quyền lợi
+            </a>
+          </div>
         </div>
         <div>
           <h4 class="text-white font-semibold mb-4">Hỗ Trợ Khách Hàng</h4>
@@ -48,7 +65,7 @@
   </footer>
 
   <!-- Floating Contact Buttons (Zalo & Phone) -->
-  <div class="fixed bottom-20 right-4 z-40 flex flex-col gap-3">
+  <div class="floating-contact-buttons fixed right-4 z-40 flex flex-col gap-3">
     <!-- Zalo Button -->
     <a href="https://zalo.me/0838709126" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-2xl transition transform hover:scale-110 relative group p-1.5" title="Chat Zalo 0838709126">
       <img src="/images/zalo-logo.png" alt="Zalo 0838709126" class="w-8 h-8 object-contain rounded-full">
@@ -62,6 +79,35 @@
       <i class="fas fa-phone-alt text-lg"></i>
     </a>
   </div>
+
+  <% const footerPath = typeof currentPath !== 'undefined' ? currentPath : ''; %>
+  <% const isFooterHome = footerPath === '/'; %>
+  <% const isFooterProduct = footerPath.startsWith('/product'); %>
+  <% const isFooterCart = footerPath.startsWith('/cart') || footerPath.startsWith('/order'); %>
+  <% const isFooterTracking = footerPath.startsWith('/tracking'); %>
+  <nav class="mobile-bottom-nav fixed left-0 right-0 bottom-0 z-50 grid-cols-4 bg-white/95 backdrop-blur border-t border-gray-200 shadow-[0_-10px_30px_rgba(15,23,42,0.12)] px-2 pt-1.5 pb-[calc(0.45rem+env(safe-area-inset-bottom))] md:hidden">
+    <a href="/" class="flex flex-col items-center justify-center gap-0.5 rounded-xl py-1.5 text-[10px] font-extrabold transition <%= isFooterHome ? 'text-orange-600 bg-orange-50' : 'text-gray-500 hover:text-orange-600' %>">
+      <i class="fas fa-house text-base"></i>
+      <span>Trang chủ</span>
+    </a>
+    <a href="/#products" class="flex flex-col items-center justify-center gap-0.5 rounded-xl py-1.5 text-[10px] font-extrabold transition <%= isFooterProduct ? 'text-orange-600 bg-orange-50' : 'text-gray-500 hover:text-orange-600' %>">
+      <i class="fas fa-box-open text-base"></i>
+      <span>Sản phẩm</span>
+    </a>
+    <a href="/cart" class="relative flex flex-col items-center justify-center gap-0.5 rounded-xl py-1.5 text-[10px] font-extrabold transition <%= isFooterCart ? 'text-orange-600 bg-orange-50' : 'text-gray-500 hover:text-orange-600' %>">
+      <span class="relative">
+        <i class="fas fa-bag-shopping text-base"></i>
+        <% if (typeof cartCount !== 'undefined' && cartCount > 0) { %>
+        <span class="absolute -top-2 -right-3 bg-red-600 text-white text-[9px] font-black min-w-4 h-4 px-1 rounded-full flex items-center justify-center"><%= cartCount %></span>
+        <% } %>
+      </span>
+      <span>Giỏ hàng</span>
+    </a>
+    <a href="/tracking" class="flex flex-col items-center justify-center gap-0.5 rounded-xl py-1.5 text-[10px] font-extrabold transition <%= isFooterTracking ? 'text-orange-600 bg-orange-50' : 'text-gray-500 hover:text-orange-600' %>">
+      <i class="fas fa-magnifying-glass text-base"></i>
+      <span>Tra cứu</span>
+    </a>
+  </nav>
 
   <script>
     function showToast(message) {
@@ -82,11 +128,14 @@
       }
     }
 
+    let _cartBusy = false;
     async function addToCart(productId, quantity = 1) {
+      if (_cartBusy) return;
+      _cartBusy = true;
       try {
         const res = await fetch('/cart/add', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
           body: JSON.stringify({ productId, quantity })
         });
         const data = await res.json();
@@ -96,6 +145,8 @@
         }
       } catch (err) {
         console.error(err);
+      } finally {
+        _cartBusy = false;
       }
     }
 

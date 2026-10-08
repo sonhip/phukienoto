@@ -1,3 +1,4 @@
+require("dotenv").config();
 const { Pool } = require("pg");
 
 const pool = new Pool({
@@ -8,6 +9,10 @@ const pool = new Pool({
   user: process.env.PGUSER || process.env.DB_USER || "smartlifehub",
   password: process.env.PGPASSWORD || process.env.DB_PASSWORD || "smartlifehub",
   max: Number(process.env.PGPOOL_MAX || 10),
+});
+
+pool.on("error", (err) => {
+  console.error("PostgreSQL Pool Idle Warning:", err.message);
 });
 
 function toPostgresPlaceholders(sql) {

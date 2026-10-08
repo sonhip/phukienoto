@@ -31,15 +31,15 @@ router.post("/add", async (req, res, next) => {
 
     const existingIndex = req.session.cart.findIndex(
       (item) =>
-        item.product_id === product.id &&
-        item.variant_name === (variantName || ""),
+        parseInt(item.product_id) === parseInt(product.id) &&
+        (item.variant_name || "") === (variantName || ""),
     );
 
     if (existingIndex >= 0) {
       req.session.cart[existingIndex].quantity += parseInt(quantity);
     } else {
       req.session.cart.push({
-        product_id: product.id,
+        product_id: parseInt(product.id),
         name: itemName,
         raw_name: product.name,
         variant_name: variantName || "",
@@ -51,43 +51,103 @@ router.post("/add", async (req, res, next) => {
       });
     }
 
-    if (req.headers["content-type"]?.includes("application/json")) {
+    const cartCount = req.session.cart.reduce(
+      (sum, item) => sum + item.quantity,
+      0,
+    );
+    const total = req.session.cart.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0,
+    );
+
+    // Force session save to ensure cart data persists across rapid requests
+    await new Promise((resolve, reject) => {
+      req.session.save((err) => (err ? reject(err) : resolve()));
+    });
+
+    if (
+      req.headers["content-type"]?.includes("application/json") ||
+      req.xhr ||
+      req.headers["accept"]?.includes("application/json")
+    ) {
       return res.json({
         success: true,
-        cartCount: req.session.cart.reduce(
-          (sum, item) => sum + item.quantity,
-          0,
-        ),
+        cartCount,
+        total,
         cart: req.session.cart,
       });
     }
 
-    res.redirect(req.get("referer") || "/");
+    res.redirect(req.get("referer") || "/cart");
   } catch (error) {
     next(error);
   }
 });
 
 // Update cart
-router.post("/update", (req, res) => {
-  const { productId, quantity } = req.body;
+router.post("/update", async (req, res) => {
+  const { productId, quantity, variantName, index: itemIdx } = req.body;
   if (!req.session.cart) req.session.cart = [];
 
-  const index = req.session.cart.findIndex(
-    (item) => item.product_id === parseInt(productId),
-  );
-  if (index >= 0) {
-    if (parseInt(quantity) <= 0) {
-      req.session.cart.splice(index, 1);
-    } else {
-      req.session.cart[index].quantity = parseInt(quantity);
+  let index = -1;
+  if (
+    itemIdx !== undefined &&
+    itemIdx !== null &&
+    itemIdx !== "" &&
+    !isNaN(parseInt(itemIdx))
+  ) {
+    const i = parseInt(itemIdx);
+    if (i >= 0 && i < req.session.cart.length) {
+      index = i;
     }
   }
 
-  if (req.headers["content-type"]?.includes("application/json")) {
+  if (index === -1 && productId) {
+    index = req.session.cart.findIndex(
+      (item) =>
+        parseInt(item.product_id) === parseInt(productId) &&
+        (item.variant_name || "") === (variantName || ""),
+    );
+  }
+
+  if (index === -1 && productId) {
+    index = req.session.cart.findIndex(
+      (item) => parseInt(item.product_id) === parseInt(productId),
+    );
+  }
+
+  const newQty = parseInt(quantity);
+  if (index >= 0 && index < req.session.cart.length) {
+    if (isNaN(newQty) || newQty <= 0) {
+      req.session.cart.splice(index, 1);
+    } else {
+      req.session.cart[index].quantity = newQty;
+    }
+  }
+
+  const cartCount = req.session.cart.reduce(
+    (sum, item) => sum + item.quantity,
+    0,
+  );
+  const total = req.session.cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
+
+  // Force session save to ensure cart data persists
+  await new Promise((resolve, reject) => {
+    req.session.save((err) => (err ? reject(err) : resolve()));
+  });
+
+  if (
+    req.headers["content-type"]?.includes("application/json") ||
+    req.xhr ||
+    req.headers["accept"]?.includes("application/json")
+  ) {
     return res.json({
       success: true,
-      cartCount: req.session.cart.reduce((sum, item) => sum + item.quantity, 0),
+      cartCount,
+      total,
       cart: req.session.cart,
     });
   }
@@ -96,18 +156,64 @@ router.post("/update", (req, res) => {
 });
 
 // Remove from cart
-router.post("/remove", (req, res) => {
-  const { productId } = req.body;
+router.post("/remove", async (req, res) => {
+  const { productId, variantName, index: itemIdx } = req.body;
   if (!req.session.cart) req.session.cart = [];
 
-  req.session.cart = req.session.cart.filter(
-    (item) => item.product_id !== parseInt(productId),
+  let index = -1;
+  if (
+    itemIdx !== undefined &&
+    itemIdx !== null &&
+    itemIdx !== "" &&
+    !isNaN(parseInt(itemIdx))
+  ) {
+    const i = parseInt(itemIdx);
+    if (i >= 0 && i < req.session.cart.length) {
+      index = i;
+    }
+  }
+
+  if (index === -1 && productId) {
+    index = req.session.cart.findIndex(
+      (item) =>
+        parseInt(item.product_id) === parseInt(productId) &&
+        (item.variant_name || "") === (variantName || ""),
+    );
+  }
+
+  if (index === -1 && productId) {
+    index = req.session.cart.findIndex(
+      (item) => parseInt(item.product_id) === parseInt(productId),
+    );
+  }
+
+  if (index >= 0 && index < req.session.cart.length) {
+    req.session.cart.splice(index, 1);
+  }
+
+  const cartCount = req.session.cart.reduce(
+    (sum, item) => sum + item.quantity,
+    0,
+  );
+  const total = req.session.cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
   );
 
-  if (req.headers["content-type"]?.includes("application/json")) {
+  // Force session save to ensure cart data persists
+  await new Promise((resolve, reject) => {
+    req.session.save((err) => (err ? reject(err) : resolve()));
+  });
+
+  if (
+    req.headers["content-type"]?.includes("application/json") ||
+    req.xhr ||
+    req.headers["accept"]?.includes("application/json")
+  ) {
     return res.json({
       success: true,
-      cartCount: req.session.cart.reduce((sum, item) => sum + item.quantity, 0),
+      cartCount,
+      total,
       cart: req.session.cart,
     });
   }

@@ -1,34 +1,37 @@
 <%- include('../partials/header') %>
 
-<div class="bg-gray-50 py-8">
-  <div class="max-w-7xl mx-auto px-4">
+<div class="bg-gray-50 py-2.5 md:py-8">
+  <div class="max-w-7xl mx-auto px-3 sm:px-4">
     <!-- Breadcrumb -->
-    <nav class="flex text-xs text-gray-500 mb-6 gap-2">
-      <a href="/" class="hover:text-orange-600">Trang chủ</a>
-      <span>/</span>
-      <a href="/#products" class="hover:text-orange-600">Sản phẩm</a>
-      <span>/</span>
-      <span class="text-gray-900 font-semibold truncate"><%= product.name %></span>
+    <nav class="flex text-[11px] sm:text-xs text-gray-500 mb-2.5 md:mb-6 gap-1.5 overflow-hidden flex-wrap items-center">
+      <a href="/" class="hover:text-orange-600 transition">Trang chủ</a>
+      <span class="text-gray-300">/</span>
+      <a href="/#products" class="hover:text-orange-600 transition">Sản phẩm</a>
+      <span class="text-gray-300">/</span>
+      <span class="text-gray-900 font-semibold truncate max-w-[180px] sm:max-w-xs"><%= product.name %></span>
     </nav>
 
     <!-- Product Main Grid -->
-    <div class="bg-white rounded-3xl p-6 lg:p-10 shadow-sm border border-gray-200 grid lg:grid-cols-2 gap-10 mb-12">
+    <div class="bg-white rounded-2xl md:rounded-3xl p-3 sm:p-6 lg:p-10 shadow-sm border border-gray-200 grid lg:grid-cols-2 gap-4 lg:gap-10 mb-5 md:mb-12">
       
       <!-- Image Gallery -->
       <div class="gallery-media min-w-0">
-        <div class="bg-gray-100 rounded-2xl overflow-hidden aspect-square mb-4 relative max-w-full">
-          <img id="main-image" src="<%= product.images[0] %>" alt="<%= product.name %>" class="w-full h-full object-cover block max-w-full">
+        <div class="bg-gray-100 rounded-xl sm:rounded-2xl overflow-hidden aspect-square mb-2.5 relative max-w-full group cursor-pointer" onclick="openLightbox(document.getElementById('main-image').src)">
+          <img id="main-image" src="<%= product.images[0] %>" alt="<%= product.name %>" class="w-full h-full object-cover block max-w-full transition-transform duration-300 group-hover:scale-105">
           <% if (product.badge) { %>
-          <span class="absolute top-4 left-4 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase shadow">
+          <span class="absolute top-2.5 left-2.5 bg-gradient-to-r from-red-600 to-orange-600 text-white text-[10px] sm:text-xs font-black px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full uppercase shadow-md tracking-wide">
             <%= product.badge %>
           </span>
           <% } %>
+          <button type="button" onclick="event.stopPropagation(); openLightbox(document.getElementById('main-image').src);" class="absolute bottom-2.5 right-2.5 bg-black/60 hover:bg-black/80 text-white backdrop-blur px-2 py-1 rounded-lg text-[10px] sm:text-xs font-medium flex items-center gap-1 shadow-md transition active:scale-95">
+            <i class="fas fa-expand text-[10px]"></i> <span>Phóng to</span>
+          </button>
         </div>
 
         <% if (product.images.length > 1) { %>
-        <div class="thumb-row flex gap-3 overflow-x-auto pb-2 max-w-full">
+        <div class="thumb-row flex gap-2 overflow-x-auto pb-1 max-w-full" style="-webkit-overflow-scrolling: touch;">
           <% product.images.forEach((img, idx) => { %>
-          <button onclick="changeImage('<%= img %>')" class="thumb-btn w-20 h-20 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-orange-500 transition focus:outline-none flex-shrink-0 bg-white">
+          <button onclick="changeImage('<%= img %>', this)" class="thumb-btn w-14 h-14 sm:w-18 sm:h-18 rounded-lg sm:rounded-xl overflow-hidden border-2 transition focus:outline-none flex-shrink-0 bg-white shadow-sm <%= idx === 0 ? 'border-orange-600 ring-2 ring-orange-200' : 'border-gray-200 opacity-80 hover:opacity-100' %>">
             <img src="<%= img %>" alt="Thumbnail" class="w-full h-full object-cover block max-w-full">
           </button>
           <% }) %>
@@ -39,66 +42,72 @@
       <!-- Info & Buy Form -->
       <div class="flex flex-col justify-between">
         <div>
-          <div class="flex items-center gap-3 mb-2">
-            <div class="flex items-center gap-1 text-yellow-400 text-sm">
-              <i class="fas fa-star"></i>
-              <span class="font-bold text-gray-800 ml-1"><%= product.rating %></span>
+          <!-- Rating & Sales Stats -->
+          <div class="flex items-center flex-wrap gap-1.5 sm:gap-2.5 mb-2 text-[11px] sm:text-xs">
+            <div class="flex items-center gap-1 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded text-amber-500 font-bold">
+              <i class="fas fa-star text-[10px]"></i>
+              <span class="font-extrabold text-gray-900 text-[11px] ml-0.5"><%= product.rating %></span>
             </div>
             <span class="text-gray-300">•</span>
-            <span class="text-xs text-gray-500"><%= product.rating_count %> Đánh giá</span>
+            <span class="text-gray-600 font-medium"><%= product.rating_count %> Đánh giá</span>
             <span class="text-gray-300">•</span>
-            <span class="text-xs text-gray-500">Đã bán <%= product.sold_count %></span>
+            <span class="text-gray-600 font-medium">Đã bán <strong class="text-gray-900 font-bold"><%= product.sold_count %></strong></span>
+            <span class="sm:ml-auto bg-emerald-50 text-emerald-700 text-[10px] sm:text-[11px] font-bold px-1.5 py-0.5 rounded border border-emerald-200/70 flex items-center gap-1">
+              <i class="fas fa-check-circle text-[10px]"></i> Còn hàng
+            </span>
           </div>
 
-          <h1 class="text-2xl lg:text-3xl font-extrabold text-gray-900 mb-4 leading-snug"><%= product.name %></h1>
+          <h1 class="text-base sm:text-xl lg:text-2xl font-black text-gray-900 mb-2.5 leading-snug"><%= product.name %></h1>
 
           <!-- Price Box -->
-          <div class="bg-orange-50/60 border border-orange-100 p-4 rounded-2xl mb-6 flex items-baseline gap-4">
-            <span id="display-sale-price" class="text-3xl font-black text-red-600"><%= formatCurrency(product.sale_price) %></span>
-            <span id="display-orig-price" class="text-base text-gray-400 price-slash"><%= formatCurrency(product.original_price) %></span>
-            <span id="display-discount" class="ml-auto bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
+          <div class="bg-gradient-to-r from-orange-50/80 via-red-50/40 to-amber-50/80 border border-orange-200/80 p-3 sm:p-4 rounded-xl sm:rounded-2xl mb-3.5 sm:mb-5 flex flex-wrap items-baseline gap-2 sm:gap-3 relative overflow-hidden">
+            <div class="flex items-baseline gap-2 flex-wrap">
+              <span id="display-sale-price" class="text-xl sm:text-2xl font-black text-red-600 tracking-tight"><%= formatCurrency(product.sale_price) %></span>
+              <span id="display-orig-price" class="text-[11px] sm:text-sm text-gray-400 price-slash font-medium"><%= formatCurrency(product.original_price) %></span>
+            </div>
+            <span id="display-discount" class="ml-auto bg-gradient-to-r from-red-600 to-orange-600 text-white text-[10px] sm:text-xs font-black px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md shadow-sm">
               GIẢM <%= Math.round((1 - product.sale_price / product.original_price) * 100) %>%
             </span>
           </div>
 
-          <!-- Quick Trust Badges -->
-          <div class="flex items-center gap-3 mb-6">
-            <div class="flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-gray-100 text-sm">
-              <i class="fas fa-truck text-indigo-500"></i>
-              <span class="font-semibold">Miễn phí giao hàng toàn quốc</span>
+          <!-- Quick Trust Badges Grid on Mobile -->
+          <div class="grid grid-cols-3 gap-1.5 sm:gap-2 mb-4">
+            <div class="flex flex-col items-center text-center p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-gray-50 border border-gray-100">
+              <i class="fas fa-truck text-orange-500 text-xs sm:text-sm mb-0.5"></i>
+              <span class="text-[10px] sm:text-xs font-semibold text-gray-800 leading-tight">Freeship Toàn Quốc</span>
             </div>
-            <div class="flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-gray-100 text-sm">
-              <i class="fas fa-undo text-emerald-500"></i>
-              <span class="font-semibold">Đổi trả 30 ngày miễn phí</span>
+            <div class="flex flex-col items-center text-center p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-gray-50 border border-gray-100">
+              <i class="fas fa-undo text-emerald-500 text-xs sm:text-sm mb-0.5"></i>
+              <span class="text-[10px] sm:text-xs font-semibold text-gray-800 leading-tight">Đổi Trả 30 Ngày</span>
             </div>
-            <div class="flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-gray-100 text-sm">
-              <i class="fab fa-rocketchat text-blue-500"></i>
-              <a href="https://zalo.me/0838709126" target="_blank" class="font-semibold hover:underline">Hỗ trợ Zalo 1-1</a>
-            </div>
+            <a href="https://zalo.me/0838709126" target="_blank" class="flex flex-col items-center text-center p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-gray-50 border border-gray-100 hover:bg-blue-50 transition">
+              <i class="fab fa-rocketchat text-blue-500 text-xs sm:text-sm mb-0.5"></i>
+              <span class="text-[10px] sm:text-xs font-semibold text-gray-800 leading-tight">Zalo 1-1 24/7</span>
+            </a>
           </div>
 
           <% if (product.variants && product.variants.length > 0) { %>
           <!-- Variant Selection Section -->
-          <div class="mb-6 bg-white p-4.5 rounded-2xl border border-gray-200 shadow-sm">
-            <label class="block text-xs font-extrabold text-gray-900 mb-3 flex items-center justify-between uppercase tracking-wide">
-              <span class="flex items-center gap-1.5"><i class="fas fa-tags text-orange-500"></i> Chọn phân loại sản phẩm:</span>
-              <span id="selected-variant-label" class="text-[11px] font-bold text-orange-600 bg-orange-50 px-2.5 py-0.5 rounded-lg border border-orange-200"><%= product.variants[0].name %></span>
+          <div class="mb-4 bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-gray-200 shadow-sm">
+            <label class="block text-[11px] sm:text-xs font-extrabold text-gray-900 mb-2 flex items-center justify-between uppercase tracking-wide">
+              <span class="flex items-center gap-1"><i class="fas fa-tags text-orange-500"></i> Phân loại:</span>
+              <span id="selected-variant-label" class="text-[10px] sm:text-[11px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded border border-orange-200 truncate max-w-[160px]"><%= product.variants[0].name %></span>
             </label>
-            <div class="flex flex-wrap gap-2.5" id="variant-selector-group">
+            <div class="flex sm:flex-wrap gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-0" id="variant-selector-group" style="-webkit-overflow-scrolling: touch;">
               <% product.variants.forEach((v, idx) => { %>
               <% const variantImg = v.image || (product.images && product.images[0]) || ''; %>
               <button 
                 type="button" 
                 onclick="selectVariant(<%= idx %>, '<%= v.name.replace(/'/g, "\\'") %>', <%= v.price %>, <%= v.original_price || product.original_price %>, '<%= v.image || '' %>')"
-                class="variant-btn border-2 rounded-2xl p-2 pr-3.5 text-xs font-bold transition flex items-center gap-2.5 cursor-pointer <%= idx === 0 ? 'border-orange-600 bg-orange-50 text-orange-800 shadow-md ring-1 ring-orange-400' : 'border-gray-200 bg-white text-gray-700 hover:border-orange-300' %>"
+                class="variant-btn flex-shrink-0 border rounded-lg sm:rounded-xl p-1.5 pr-2.5 text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer active:scale-95 <%= idx === 0 ? 'border-orange-600 bg-orange-50 text-orange-800 shadow-sm ring-1 ring-orange-400' : 'border-gray-200 bg-white text-gray-700 hover:border-orange-300' %>"
                 data-idx="<%= idx %>"
               >
                 <% if (variantImg) { %>
-                  <img src="<%= variantImg %>" alt="<%= v.name %>" class="variant-img w-9 h-9 rounded-xl object-cover border flex-shrink-0 transition <%= idx === 0 ? 'border-orange-500 ring-2 ring-orange-300' : 'border-gray-200' %>">
+                  <img src="<%= variantImg %>" alt="<%= v.name %>" class="variant-img w-7 h-7 rounded-md sm:rounded-lg object-cover border flex-shrink-0 transition <%= idx === 0 ? 'border-orange-500 ring-1 ring-orange-300' : 'border-gray-200' %>">
                 <% } %>
                 <div class="flex flex-col text-left">
-                  <span class="leading-tight text-xs font-extrabold"><%= v.name %></span>
-                  <span class="var-price-text text-[11px] font-black <%= idx === 0 ? 'text-red-600' : 'text-gray-500' %>"><%= formatCurrency(v.price) %></span>
+                  <span class="leading-tight text-[11px] font-extrabold"><%= v.name %></span>
+                  <span class="var-price-text text-[10px] font-black <%= idx === 0 ? 'text-red-600' : 'text-gray-500' %>"><%= formatCurrency(v.price) %></span>
                 </div>
               </button>
               <% }) %>
@@ -107,42 +116,42 @@
           <% } %>
 
           <!-- Direct buy perk highlight -->
-          <div class="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-2xl p-4 mb-6">
-            <div class="flex items-center gap-2 text-amber-900 font-bold text-sm mb-1">
+          <div class="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-xl p-3 mb-4">
+            <div class="flex items-center gap-1.5 text-amber-900 font-bold text-[11px] sm:text-xs mb-0.5">
               <i class="fas fa-bolt text-amber-500"></i> XÁC NHẬN ĐƠN HÀNG TỰ ĐỘNG 24/7
             </div>
-            <p class="text-xs text-amber-800 leading-relaxed">
-              Chọn thanh toán chuyển khoản qua QR Code để đơn được hệ thống duyệt tự động 24/7 ngay tức thì. Với đơn COD, shop sẽ liên hệ gọi điện xác nhận nhanh trong ngày và đóng gói gửi đi liền!
+            <p class="text-[10px] sm:text-xs text-amber-800 leading-relaxed">
+              Chọn thanh toán QR Code để duyệt tự động 24/7 tức thì. Với đơn COD, shop gọi xác nhận nhanh và gửi ngay!
             </p>
           </div>
 
           <!-- Summary Bullet Points -->
-          <ul class="space-y-2 text-sm text-gray-700 mb-6">
+          <ul class="space-y-1.5 text-[11px] sm:text-xs text-gray-700 mb-4">
             <% product.highlights.forEach(h => { %>
-            <li class="flex items-center gap-2">
-              <i class="fas fa-check-circle text-emerald-500"></i> <%= h %>
+            <li class="flex items-center gap-1.5">
+              <i class="fas fa-check-circle text-emerald-500 flex-shrink-0 text-xs"></i> <span><%= h %></span>
             </li>
             <% }) %>
           </ul>
         </div>
 
         <!-- Quantity & Buy Buttons -->
-        <div class="border-t border-gray-100 pt-6">
-          <div class="flex items-center gap-4 mb-6">
-            <span class="text-sm font-semibold text-gray-700">Số lượng:</span>
-            <div class="flex items-center border border-gray-300 rounded-xl overflow-hidden bg-gray-50">
-              <button onclick="changeQty(-1)" class="px-3 py-2 text-gray-600 hover:bg-gray-200 font-bold">-</button>
-              <input id="qty-input" type="number" value="1" min="1" max="99" class="w-12 text-center bg-transparent font-bold text-sm focus:outline-none">
-              <button onclick="changeQty(1)" class="px-3 py-2 text-gray-600 hover:bg-gray-200 font-bold">+</button>
+        <div class="border-t border-gray-100 pt-3.5">
+          <div class="flex items-center gap-2.5 mb-4">
+            <span class="text-[11px] sm:text-xs font-semibold text-gray-700">Số lượng:</span>
+            <div class="flex items-center border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
+              <button onclick="changeQty(-1)" class="px-2.5 py-1 text-gray-600 hover:bg-gray-200 font-bold active:bg-gray-300 text-xs">-</button>
+              <input id="qty-input" type="number" value="1" min="1" max="99" class="w-10 text-center bg-transparent font-bold text-xs focus:outline-none">
+              <button onclick="changeQty(1)" class="px-2.5 py-1 text-gray-600 hover:bg-gray-200 font-bold active:bg-gray-300 text-xs">+</button>
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-3">
-            <button onclick="addToCartDetail(<%= product.id %>)" class="bg-orange-100 text-orange-700 hover:bg-orange-200 font-bold py-4 rounded-2xl text-sm transition flex items-center justify-center gap-2">
-              <i class="fas fa-cart-plus text-lg"></i> Thêm Giỏ Hàng
+          <div class="grid grid-cols-2 gap-2 sm:gap-3">
+            <button onclick="addToCartDetail(<%= product.id %>)" class="bg-orange-100 text-orange-700 hover:bg-orange-200 active:scale-95 font-bold py-2.5 sm:py-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+              <i class="fas fa-cart-plus text-sm"></i> Thêm Giỏ Hàng
             </button>
-            <button onclick="buyNowDetail(<%= product.id %>)" class="gradient-cta text-white font-extrabold py-4 rounded-2xl text-sm shadow-lg hover:opacity-95 transition flex items-center justify-center gap-2">
-              <i class="fas fa-bolt text-lg"></i> MUA NGAY COD / CK
+            <button onclick="buyNowDetail(<%= product.id %>)" class="gradient-cta text-white font-extrabold py-2.5 sm:py-3 rounded-xl text-xs shadow-md hover:opacity-95 active:scale-95 transition flex items-center justify-center gap-1">
+              <i class="fas fa-bolt text-sm"></i> MUA NGAY COD / CK
             </button>
           </div>
         </div>
@@ -151,15 +160,15 @@
 
     <!-- Product Videos Showcase Section -->
     <% if (product.videos && product.videos.length > 0) { %>
-    <div class="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-200 mb-12">
-      <div class="flex items-center justify-between mb-6 pb-3 border-b border-gray-100">
+    <div class="bg-white rounded-2xl md:rounded-3xl p-3.5 sm:p-6 lg:p-8 shadow-sm border border-gray-200 mb-5 md:mb-12">
+      <div class="flex items-center justify-between mb-3 pb-2.5 border-b border-gray-100">
         <div>
-          <h2 class="text-xl font-extrabold text-gray-900 flex items-center gap-2">
-            <i class="fas fa-play-circle text-purple-600"></i> Video Trải Nghiệm & Đánh Giá Thực Tế
+          <h2 class="text-sm sm:text-lg font-extrabold text-gray-900 flex items-center gap-1.5">
+            <i class="fas fa-play-circle text-purple-600"></i> Video Trải Nghiệm Thực Tế
           </h2>
-          <p class="text-xs text-gray-500 mt-1">Video quay trực tiếp từ Shop và trải nghiệm thực tế của khách hàng</p>
+          <p class="text-[10px] sm:text-xs text-gray-500 mt-0.5">Video quay trực tiếp từ Shop và trải nghiệm thực tế</p>
         </div>
-        <span class="bg-purple-100 text-purple-700 font-bold text-xs px-3 py-1 rounded-full"><%= product.videos.length %> Video</span>
+        <span class="bg-purple-100 text-purple-700 font-bold text-[10px] sm:text-xs px-2 py-0.5 rounded-full"><%= product.videos.length %> Video</span>
       </div>
 
       <div class="vertical-scroll">
@@ -179,35 +188,75 @@
     <% } %>
 
     <!-- Product Description -->
-    <div class="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-200 mb-12">
-      <h2 class="text-xl font-bold text-gray-900 mb-6 pb-3 border-b border-gray-100 flex items-center gap-2">
+    <div class="bg-white rounded-2xl md:rounded-3xl p-3.5 sm:p-6 lg:p-8 shadow-sm border border-gray-200 mb-5 md:mb-12">
+      <h2 class="text-sm sm:text-lg font-bold text-gray-900 mb-3 pb-2.5 border-b border-gray-100 flex items-center gap-1.5">
         <i class="fas fa-file-alt text-orange-500"></i> Mô Tả Chi Tiết Sản Phẩm
       </h2>
-      <div class="prose max-w-none text-gray-700 leading-relaxed space-y-4">
+      <div class="prose max-w-none text-gray-700 leading-relaxed text-xs sm:text-base space-y-3">
         <%- product.description %>
       </div>
     </div>
+
+    <!-- Related / Featured Products -->
+    <% if (typeof otherProducts !== 'undefined' && otherProducts.length > 0) { %>
+    <div class="bg-white rounded-2xl md:rounded-3xl p-3.5 sm:p-6 lg:p-8 shadow-sm border border-gray-200 mb-5 md:mb-12">
+      <div class="flex items-center justify-between mb-3 pb-2.5 border-b border-gray-100">
+        <h2 class="text-sm sm:text-lg font-extrabold text-gray-900 flex items-center gap-1.5">
+          <i class="fas fa-boxes-stacked text-orange-500"></i> Sản Phẩm Nổi Bật Khác
+        </h2>
+        <a href="/#products" class="text-[11px] sm:text-xs text-orange-600 font-bold hover:underline flex items-center gap-0.5">
+          Xem tất cả <i class="fas fa-chevron-right text-[9px]"></i>
+        </a>
+      </div>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+        <% otherProducts.forEach(p => { %>
+        <a href="/product/<%= p.slug %>" class="group bg-white rounded-xl sm:rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition flex flex-col active:scale-98">
+          <div class="aspect-square overflow-hidden bg-gray-100 relative">
+            <img src="<%= p.images[0] %>" alt="<%= p.name %>" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+            <% if (p.badge) { %>
+            <span class="absolute top-1.5 left-1.5 bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded uppercase shadow"><%= p.badge %></span>
+            <% } %>
+          </div>
+          <div class="p-2.5 flex-1 flex flex-col justify-between">
+            <h3 class="font-bold text-[11px] sm:text-sm text-gray-900 group-hover:text-orange-600 transition line-clamp-2 mb-1.5 leading-snug"><%= p.name %></h3>
+            <div class="flex items-baseline gap-1">
+              <span class="font-extrabold text-red-600 text-xs sm:text-sm"><%= formatCurrency(p.sale_price) %></span>
+              <span class="text-[9px] sm:text-xs text-gray-400 price-slash"><%= formatCurrency(p.original_price) %></span>
+            </div>
+          </div>
+        </a>
+        <% }) %>
+      </div>
+    </div>
+    <% } %>
+
   </div>
 </div>
 
 <!-- Sticky Mobile Quick Buy Bar -->
-<div class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur border-t border-gray-200 p-3 shadow-2xl flex items-center gap-3">
-  <div class="flex-1 min-w-0">
-    <span class="block text-[10px] text-gray-500 font-semibold truncate"><%= product.name %></span>
-    <div class="flex items-baseline gap-1.5">
-      <span class="font-extrabold text-red-600 text-base leading-none"><%= formatCurrency(product.sale_price) %></span>
-      <span class="text-[10px] text-gray-400 price-slash"><%= formatCurrency(product.original_price) %></span>
+<div class="mobile-action-bar md:hidden fixed left-0 right-0 z-40 bg-white/95 backdrop-blur border-t border-gray-200 px-3 py-2 shadow-[0_-8px_20px_rgba(0,0,0,0.12)] flex items-center gap-2">
+  <div class="flex-1 min-w-0 pr-1">
+    <div class="flex items-center gap-1">
+      <span id="mobile-selected-variant" class="text-[9px] font-extrabold text-orange-600 bg-orange-50 px-1 py-0.2 rounded border border-orange-200 truncate max-w-[120px]">
+        <%= (product.variants && product.variants.length > 0) ? product.variants[0].name : 'Chuẩn' %>
+      </span>
+      <span class="text-[9px] text-gray-400">Giá:</span>
+    </div>
+    <div class="flex items-baseline gap-1 mt-0.5">
+      <span id="mobile-display-sale-price" class="font-black text-red-600 text-sm leading-none"><%= formatCurrency(product.sale_price) %></span>
+      <span id="mobile-display-orig-price" class="text-[9px] text-gray-400 price-slash"><%= formatCurrency(product.original_price) %></span>
     </div>
   </div>
-  <button onclick="addToCartDetail(<%= product.id %>)" class="bg-orange-100 text-orange-700 font-bold p-3 rounded-xl text-xs flex items-center justify-center active:scale-95 transition">
-    <i class="fas fa-cart-plus text-base"></i>
+  <button type="button" onclick="addToCartDetail(<%= product.id %>)" class="bg-orange-100 active:bg-orange-200 text-orange-700 font-bold px-3 py-2 rounded-lg text-xs flex items-center justify-center active:scale-95 transition flex-shrink-0" title="Thêm vào giỏ hàng">
+    <i class="fas fa-cart-plus text-sm"></i>
   </button>
-  <button onclick="buyNowDetail(<%= product.id %>)" class="gradient-cta text-white font-extrabold px-5 py-3 rounded-xl text-xs shadow-md flex items-center gap-1.5 active:scale-95 transition">
-    <i class="fas fa-bolt"></i> MUA NGAY
+  <button type="button" onclick="buyNowDetail(<%= product.id %>)" class="gradient-cta text-white font-extrabold px-3.5 py-2 rounded-lg text-[11px] shadow-md flex items-center gap-1 active:scale-95 transition flex-shrink-0">
+    <i class="fas fa-bolt text-xs"></i> <span>MUA NGAY</span>
   </button>
 </div>
 
 <script>
+  document.body.classList.add('has-mobile-action-bar');
   let selectedVariant = <%- (product.variants && product.variants.length > 0) ? JSON.stringify(product.variants[0]) : 'null' %>;
 
   function selectVariant(idx, name, price, originalPrice, image) {
@@ -216,12 +265,24 @@
     const labelEl = document.getElementById('selected-variant-label');
     if (labelEl) labelEl.textContent = name;
 
+    const mobileVariantEl = document.getElementById('mobile-selected-variant');
+    if (mobileVariantEl) mobileVariantEl.textContent = name;
+
+    const formattedSale = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+    const formattedOrig = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(originalPrice);
+
     const salePriceEl = document.getElementById('display-sale-price');
     const origPriceEl = document.getElementById('display-orig-price');
     const discountEl = document.getElementById('display-discount');
 
-    if (salePriceEl) salePriceEl.textContent = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-    if (origPriceEl) origPriceEl.textContent = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(originalPrice);
+    const mobileSalePriceEl = document.getElementById('mobile-display-sale-price');
+    const mobileOrigPriceEl = document.getElementById('mobile-display-orig-price');
+
+    if (salePriceEl) salePriceEl.textContent = formattedSale;
+    if (origPriceEl) origPriceEl.textContent = formattedOrig;
+    if (mobileSalePriceEl) mobileSalePriceEl.textContent = formattedSale;
+    if (mobileOrigPriceEl) mobileOrigPriceEl.textContent = formattedOrig;
+
     if (discountEl && originalPrice > 0) {
       const pct = Math.round((1 - price / originalPrice) * 100);
       discountEl.textContent = `GIẢM ${pct}%`;
@@ -236,27 +297,38 @@
       const img = btn.querySelector('.variant-img');
       const priceText = btn.querySelector('.var-price-text');
       if (i === idx) {
-        btn.className = 'variant-btn border-2 rounded-2xl p-2 pr-3.5 text-xs font-bold transition flex items-center gap-2.5 cursor-pointer border-orange-600 bg-orange-50 text-orange-800 shadow-md ring-1 ring-orange-400';
-        if (img) img.className = 'variant-img w-9 h-9 rounded-xl object-cover border flex-shrink-0 transition border-orange-500 ring-2 ring-orange-300';
-        if (priceText) priceText.className = 'var-price-text text-[11px] font-black text-red-600';
+        btn.className = 'variant-btn flex-shrink-0 border rounded-lg sm:rounded-xl p-1.5 pr-2.5 text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer active:scale-95 border-orange-600 bg-orange-50 text-orange-800 shadow-sm ring-1 ring-orange-400';
+        if (img) img.className = 'variant-img w-7 h-7 rounded-md sm:rounded-lg object-cover border flex-shrink-0 transition border-orange-500 ring-1 ring-orange-300';
+        if (priceText) priceText.className = 'var-price-text text-[10px] font-black text-red-600';
       } else {
-        btn.className = 'variant-btn border-2 rounded-2xl p-2 pr-3.5 text-xs font-bold transition flex items-center gap-2.5 cursor-pointer border-gray-200 bg-white text-gray-700 hover:border-orange-300';
-        if (img) img.className = 'variant-img w-9 h-9 rounded-xl object-cover border flex-shrink-0 transition border-gray-200';
-        if (priceText) priceText.className = 'var-price-text text-[11px] font-black text-gray-500';
+        btn.className = 'variant-btn flex-shrink-0 border rounded-lg sm:rounded-xl p-1.5 pr-2.5 text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer active:scale-95 border-gray-200 bg-white text-gray-700 hover:border-orange-300';
+        if (img) img.className = 'variant-img w-7 h-7 rounded-md sm:rounded-lg object-cover border flex-shrink-0 transition border-gray-200';
+        if (priceText) priceText.className = 'var-price-text text-[10px] font-black text-gray-500';
       }
     });
   }
 
   function openLightbox(src) {
     const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 cursor-pointer';
+    modal.className = 'fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-3 cursor-pointer backdrop-blur-sm animate-fadeIn';
     modal.onclick = () => modal.remove();
-    modal.innerHTML = `<img src="${src}" class="max-w-full max-h-[90vh] rounded-2xl shadow-2xl object-contain">`;
+    modal.innerHTML = `
+      <div class="relative max-w-full max-h-[92vh]">
+        <img src="${src}" class="max-w-full max-h-[90vh] rounded-2xl shadow-2xl object-contain mx-auto">
+        <button class="absolute -top-3 -right-3 bg-white text-gray-900 w-8 h-8 rounded-full flex items-center justify-center shadow-lg font-bold text-sm">✕</button>
+      </div>
+    `;
     document.body.appendChild(modal);
   }
 
-  function changeImage(src) {
+  function changeImage(src, btnEl) {
     document.getElementById('main-image').src = src;
+    if (btnEl) {
+      document.querySelectorAll('.thumb-btn').forEach(b => {
+        b.className = 'thumb-btn w-14 h-14 sm:w-18 sm:h-18 rounded-lg sm:rounded-xl overflow-hidden border-2 transition focus:outline-none flex-shrink-0 bg-white shadow-sm border-gray-200 opacity-80 hover:opacity-100';
+      });
+      btnEl.className = 'thumb-btn w-14 h-14 sm:w-18 sm:h-18 rounded-lg sm:rounded-xl overflow-hidden border-2 transition focus:outline-none flex-shrink-0 bg-white shadow-sm border-orange-600 ring-2 ring-orange-200 opacity-100';
+    }
   }
 
   function changeQty(delta) {
@@ -266,7 +338,10 @@
     input.value = val;
   }
 
+  let _addCartBusy = false;
   async function addToCartDetail(productId) {
+    if (_addCartBusy) return;
+    _addCartBusy = true;
     const qty = parseInt(document.getElementById('qty-input').value) || 1;
     const variantName = selectedVariant ? selectedVariant.name : '';
     const variantPrice = selectedVariant ? selectedVariant.price : null;
@@ -275,7 +350,7 @@
     try {
       const res = await fetch('/cart/add', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ productId, quantity: qty, variantName, variantPrice, variantImage })
       });
       const data = await res.json();
@@ -285,6 +360,8 @@
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      _addCartBusy = false;
     }
   }
 

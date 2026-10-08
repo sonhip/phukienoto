@@ -142,11 +142,14 @@
       }
     }
 
+    let _cartBusy = false;
     async function addToCart(productId, quantity = 1) {
+      if (_cartBusy) return;
+      _cartBusy = true;
       try {
         const res = await fetch('/cart/add', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
           body: JSON.stringify({ productId, quantity })
         });
         const data = await res.json();
@@ -156,6 +159,8 @@
         }
       } catch (err) {
         console.error(err);
+      } finally {
+        _cartBusy = false;
       }
     }
 

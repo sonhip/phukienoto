@@ -1,13 +1,13 @@
 <%- include('../partials/header') %>
 
-<div class="bg-gray-50 py-10 min-h-screen">
-  <div class="max-w-5xl mx-auto px-4">
-    <h1 class="text-2xl font-black text-gray-900 mb-6 flex items-center gap-2">
+<div class="bg-gray-50 py-4 md:py-10 min-h-screen">
+  <div class="max-w-5xl mx-auto px-3 sm:px-4">
+    <h1 class="text-xl md:text-2xl font-black text-gray-900 mb-4 md:mb-6 flex items-center gap-2">
       <i class="fas fa-shopping-cart text-orange-500"></i> Giỏ Hàng Của Bạn
     </h1>
 
     <% if (cart.length === 0) { %>
-    <div class="bg-white rounded-3xl p-12 text-center shadow-sm border border-gray-200">
+    <div class="bg-white rounded-2xl md:rounded-3xl p-7 md:p-12 text-center shadow-sm border border-gray-200">
       <div class="w-20 h-20 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
         <i class="fas fa-shopping-basket"></i>
       </div>
@@ -19,68 +19,209 @@
     </div>
     <% } else { %>
 
-    <div class="grid md:grid-cols-3 gap-8">
+    <div class="grid md:grid-cols-3 gap-5 md:gap-8" id="cart-content">
       
       <!-- Cart Items List -->
-      <div class="md:col-span-2 space-y-4">
-        <% cart.forEach(item => { %>
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 flex items-center gap-4">
-          <img src="<%= item.image %>" alt="<%= item.name %>" class="w-20 h-20 object-cover rounded-xl bg-gray-100 flex-shrink-0">
-          <div class="flex-1">
-            <h3 class="font-bold text-gray-900 text-sm mb-1"><%= item.name %></h3>
-            <div class="text-red-600 font-extrabold text-sm"><%= formatCurrency(item.price) %></div>
-            <div class="flex items-center gap-4 mt-2">
-              <form action="/cart/update" method="POST" class="flex items-center border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
-                <input type="hidden" name="productId" value="<%= item.product_id %>">
-                <button type="submit" name="quantity" value="<%= item.quantity - 1 %>" class="px-2 py-1 text-gray-600 hover:bg-gray-200 font-bold">-</button>
-                <span class="px-3 text-xs font-bold text-gray-800"><%= item.quantity %></span>
-                <button type="submit" name="quantity" value="<%= item.quantity + 1 %>" class="px-2 py-1 text-gray-600 hover:bg-gray-200 font-bold">+</button>
-              </form>
-              <form action="/cart/remove" method="POST">
-                <input type="hidden" name="productId" value="<%= item.product_id %>">
-                <button type="submit" class="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1">
-                  <i class="fas fa-trash-alt"></i> Xóa
-                </button>
-              </form>
+      <div class="md:col-span-2 space-y-3 md:space-y-4" id="cart-items-container">
+        <% cart.forEach((item, idx) => { %>
+        <div class="cart-item-card bg-white rounded-2xl p-3.5 md:p-4 shadow-sm border border-gray-200 flex items-start gap-3 md:gap-4 transition duration-200" data-index="<%= idx %>" data-product-id="<%= item.product_id %>" data-variant="<%= item.variant_name || '' %>">
+          <a href="/product/<%= item.slug %>" class="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-gray-100 border border-gray-100 block">
+            <img src="<%= item.image %>" alt="<%= item.name %>" class="w-full h-full object-cover block max-w-full">
+          </a>
+          <div class="flex-1 min-w-0">
+            <a href="/product/<%= item.slug %>" class="font-bold text-gray-900 text-xs sm:text-sm mb-1 hover:text-orange-600 transition line-clamp-2 leading-snug"><%= item.name %></a>
+            <div class="text-red-600 font-extrabold text-xs sm:text-sm"><%= formatCurrency(item.price) %></div>
+            <div class="text-[10px] sm:text-xs font-bold text-gray-500 mt-0.5 sm:hidden">
+              Tổng: <span class="mobile-item-subtotal text-red-600 font-extrabold"><%= formatCurrency(item.price * item.quantity) %></span>
+            </div>
+            <div class="flex items-center gap-2.5 sm:gap-4 mt-2 flex-wrap">
+              <!-- Quantity Form -->
+              <div class="flex items-center border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
+                <button type="button" onclick="changeCartQty(this, -1)" class="px-2.5 py-1 text-gray-600 hover:bg-gray-200 font-bold active:bg-gray-300 text-xs">-</button>
+                <span class="px-2.5 text-xs font-bold text-gray-800 item-qty-display"><%= item.quantity %></span>
+                <button type="button" onclick="changeCartQty(this, 1)" class="px-2.5 py-1 text-gray-600 hover:bg-gray-200 font-bold active:bg-gray-300 text-xs">+</button>
+              </div>
+              <!-- Remove Button -->
+              <button type="button" onclick="removeCartItemFromCard(this)" class="text-xs text-red-500 hover:text-red-700 font-semibold flex items-center gap-1 active:scale-95 transition py-1 px-1.5">
+                <i class="fas fa-trash-alt text-xs"></i> Xóa
+              </button>
             </div>
           </div>
-          <div class="text-right font-bold text-gray-900 text-sm">
-            <%= formatCurrency(item.price * item.quantity) %>
+          <div class="hidden sm:block text-right font-bold text-gray-900 text-sm flex-shrink-0">
+            <span class="desktop-item-subtotal text-gray-900"><%= formatCurrency(item.price * item.quantity) %></span>
           </div>
         </div>
         <% }) %>
       </div>
 
       <!-- Order Summary -->
-      <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-200 h-fit space-y-6">
-        <h2 class="font-bold text-gray-900 text-lg pb-3 border-b border-gray-100">Tóm Tắt Đơn Hàng</h2>
+      <div class="bg-white rounded-2xl md:rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-200 h-fit space-y-5">
+        <h2 class="font-bold text-gray-900 text-base sm:text-lg pb-2.5 border-b border-gray-100 flex items-center gap-2">
+          <i class="fas fa-receipt text-orange-500"></i> Tóm Tắt Đơn Hàng
+        </h2>
         
-        <div class="space-y-3 text-sm">
+        <div class="space-y-2.5 text-xs sm:text-sm">
           <div class="flex justify-between text-gray-600">
             <span>Tạm tính:</span>
-            <span class="font-semibold text-gray-900"><%= formatCurrency(total) %></span>
+            <span id="summary-subtotal" class="font-bold text-gray-900"><%= formatCurrency(total) %></span>
           </div>
           <div class="flex justify-between text-gray-600">
             <span>Phí vận chuyển:</span>
             <span class="font-bold text-emerald-600">MIỄN PHÍ</span>
           </div>
           <div class="border-t border-gray-100 pt-3 flex justify-between items-baseline">
-            <span class="font-bold text-gray-900">Tổng thanh toán:</span>
-            <span class="text-2xl font-black text-red-600"><%= formatCurrency(total) %></span>
+            <span class="font-bold text-gray-900 text-sm">Tổng thanh toán:</span>
+            <span id="summary-total" class="text-xl sm:text-2xl font-black text-red-600"><%= formatCurrency(total) %></span>
           </div>
         </div>
 
-        <div class="bg-amber-50 border border-amber-200 p-3.5 rounded-2xl text-xs text-amber-800">
+        <div class="bg-amber-50/80 border border-amber-200 p-3 rounded-xl text-xs text-amber-800 leading-relaxed">
           <i class="fas fa-bolt text-amber-500 mr-1"></i> Mẹo nhỏ: Chọn <strong>Chuyển Khoản Ngân Hàng</strong> để đơn hàng được hệ thống tự động duyệt 24/7 ngay tức thì!
         </div>
 
-        <a href="/order/checkout" class="w-full gradient-cta text-white font-extrabold py-4 rounded-2xl text-center shadow-lg hover:opacity-95 transition flex items-center justify-center gap-2">
-          TIẾN HÀNH THANH TOÁN <i class="fas fa-arrow-right"></i>
+        <a href="/order/checkout" class="w-full gradient-cta text-white font-extrabold py-3.5 rounded-xl sm:rounded-2xl text-center shadow-lg hover:opacity-95 active:scale-95 transition flex items-center justify-center gap-2 text-xs sm:text-sm">
+          TIẾN HÀNH THANH TOÁN <i class="fas fa-arrow-right text-xs"></i>
         </a>
       </div>
 
     </div>
 
+    <!-- Sticky Mobile Bar -->
+    <div class="mobile-action-bar md:hidden fixed left-0 right-0 z-40 bg-white/95 backdrop-blur border-t border-gray-200 px-3 py-2 shadow-[0_-8px_20px_rgba(0,0,0,0.12)] flex items-center gap-3">
+      <div class="flex-1 min-w-0">
+        <span class="block text-[10px] uppercase tracking-wide font-bold text-gray-500">Tổng thanh toán</span>
+        <span id="mobile-summary-total" class="block text-base font-black text-red-600 leading-tight"><%= formatCurrency(total) %></span>
+      </div>
+      <a href="/order/checkout" class="gradient-cta text-white font-extrabold px-4 py-2.5 rounded-xl text-xs shadow-md flex items-center justify-center gap-1.5 active:scale-95 transition">
+        Thanh toán <i class="fas fa-arrow-right text-xs"></i>
+      </a>
+    </div>
+
+    <script>
+      document.body.classList.add('has-mobile-action-bar');
+
+      function formatMoney(amount) {
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+      }
+
+      function changeCartQty(btn, delta) {
+        const card = btn.closest('.cart-item-card');
+        if (!card) return;
+        const index = parseInt(card.getAttribute('data-index'));
+        const productId = card.getAttribute('data-product-id');
+        const variantName = card.getAttribute('data-variant') || '';
+        const qtyDisplay = card.querySelector('.item-qty-display');
+        const currentQty = qtyDisplay ? (parseInt(qtyDisplay.textContent) || 1) : 1;
+        const newQty = currentQty + delta;
+
+        updateCartItem(index, productId, variantName, newQty);
+      }
+
+      function removeCartItemFromCard(btn) {
+        const card = btn.closest('.cart-item-card');
+        if (!card) return;
+        const index = parseInt(card.getAttribute('data-index'));
+        const productId = card.getAttribute('data-product-id');
+        const variantName = card.getAttribute('data-variant') || '';
+        removeCartItem(index, productId, variantName);
+      }
+
+      let _cartUpdateBusy = false;
+      async function updateCartItem(index, productId, variantName, quantity) {
+        if (_cartUpdateBusy) return;
+        _cartUpdateBusy = true;
+        try {
+          const res = await fetch('/cart/update', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({ index, productId, variantName, quantity })
+          });
+          const data = await res.json();
+          if (data.success) {
+            updateCartBadge(data.cartCount);
+            if (data.cartCount === 0 || !data.cart || data.cart.length === 0) {
+              window.location.reload();
+              return;
+            }
+            refreshCartUI(data);
+          }
+        } catch (err) {
+          console.error(err);
+          window.location.reload();
+        } finally {
+          _cartUpdateBusy = false;
+        }
+      }
+
+      async function removeCartItem(index, productId, variantName) {
+        try {
+          const res = await fetch('/cart/remove', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({ index, productId, variantName })
+          });
+          const data = await res.json();
+          if (data.success) {
+            updateCartBadge(data.cartCount);
+            if (data.cartCount === 0 || !data.cart || data.cart.length === 0) {
+              window.location.reload();
+              return;
+            }
+            refreshCartUI(data);
+            showToast('Đã xóa sản phẩm khỏi giỏ hàng!');
+          }
+        } catch (err) {
+          console.error(err);
+          window.location.reload();
+        }
+      }
+
+      function refreshCartUI(data) {
+        const { cart, total } = data;
+
+        // Update totals
+        const totalFormatted = formatMoney(total);
+        const subtotalEl = document.getElementById('summary-subtotal');
+        const totalEl = document.getElementById('summary-total');
+        const mobileTotalEl = document.getElementById('mobile-summary-total');
+
+        if (subtotalEl) subtotalEl.textContent = totalFormatted;
+        if (totalEl) totalEl.textContent = totalFormatted;
+        if (mobileTotalEl) mobileTotalEl.textContent = totalFormatted;
+
+        // Update item cards
+        const container = document.getElementById('cart-items-container');
+        if (!container) return;
+
+        const currentCards = container.querySelectorAll('.cart-item-card');
+        if (currentCards.length !== cart.length) {
+          window.location.reload();
+          return;
+        }
+
+        currentCards.forEach((card, cardIdx) => {
+          const item = cart[cardIdx];
+          card.setAttribute('data-index', cardIdx);
+          card.setAttribute('data-product-id', item.product_id);
+          card.setAttribute('data-variant', item.variant_name || '');
+
+          const qtyDisplay = card.querySelector('.item-qty-display');
+          const mobileSubtotal = card.querySelector('.mobile-item-subtotal');
+          const desktopSubtotal = card.querySelector('.desktop-item-subtotal');
+
+          if (qtyDisplay) qtyDisplay.textContent = item.quantity;
+          const itemTotalFormatted = formatMoney(item.price * item.quantity);
+          if (mobileSubtotal) mobileSubtotal.textContent = itemTotalFormatted;
+          if (desktopSubtotal) desktopSubtotal.textContent = itemTotalFormatted;
+        });
+      }
+    </script>
     <% } %>
   </div>
 </div>
