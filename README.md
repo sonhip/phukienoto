@@ -141,7 +141,7 @@ docker buildx build \
 ```bash
 git add .
 git status
-git commit -m "release v1.0.5"
+git commit -m "release v1.0.6"
 git push origin main
 ```
 
