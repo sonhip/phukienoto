@@ -8,14 +8,14 @@
       <span class="text-gray-300">/</span>
       <a href="/#products" class="hover:text-orange-600 transition">Sản phẩm</a>
       <span class="text-gray-300">/</span>
-      <span class="text-gray-900 font-semibold truncate max-w-[180px] sm:max-w-xs"><%= product.name %></span>
+      <span class="text-gray-900 font-semibold truncate max-w-[180px] sm:max-w-xs" title="<%= product.name %>"><%= product.name %></span>
     </nav>
 
     <!-- Product Main Grid -->
-    <div class="bg-white rounded-2xl md:rounded-3xl p-3 sm:p-6 lg:p-10 shadow-sm border border-gray-200 grid lg:grid-cols-2 gap-4 lg:gap-10 mb-5 md:mb-12">
+    <div class="bg-white rounded-2xl md:rounded-3xl p-3 sm:p-6 lg:p-10 shadow-sm border border-gray-200 grid lg:grid-cols-2 gap-4 lg:gap-10 mb-5 md:mb-12 w-full min-w-0 overflow-hidden">
       
       <!-- Image Gallery -->
-      <div class="gallery-media min-w-0">
+      <div class="gallery-media min-w-0 w-full">
         <div class="bg-gray-100 rounded-xl sm:rounded-2xl overflow-hidden aspect-square mb-2.5 relative max-w-full group cursor-pointer" onclick="openLightbox(document.getElementById('main-image').src)">
           <img id="main-image" src="<%= product.images[0] %>" alt="<%= product.name %>" class="w-full h-full object-cover block max-w-full transition-transform duration-300 group-hover:scale-105">
           <% if (product.badge) { %>
@@ -40,7 +40,7 @@
       </div>
 
       <!-- Info & Buy Form -->
-      <div class="flex flex-col justify-between">
+      <div class="flex flex-col justify-between w-full min-w-0">
         <div>
           <!-- Rating & Sales Stats -->
           <div class="flex items-center flex-wrap gap-1.5 sm:gap-2.5 mb-2 text-[11px] sm:text-xs">
@@ -57,7 +57,7 @@
             </span>
           </div>
 
-          <h1 class="text-base sm:text-xl lg:text-2xl font-black text-gray-900 mb-2.5 leading-snug"><%= product.name %></h1>
+          <h1 class="text-base sm:text-xl lg:text-2xl font-black text-gray-900 mb-2.5 leading-snug" title="<%= product.name %>"><%= product.name %></h1>
 
           <!-- Price Box -->
           <div class="bg-gradient-to-r from-orange-50/80 via-red-50/40 to-amber-50/80 border border-orange-200/80 p-3 sm:p-4 rounded-xl sm:rounded-2xl mb-3.5 sm:mb-5 flex flex-wrap items-baseline gap-2 sm:gap-3 relative overflow-hidden">
@@ -88,25 +88,26 @@
 
           <% if (product.variants && product.variants.length > 0) { %>
           <!-- Variant Selection Section -->
-          <div class="mb-4 bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-gray-200 shadow-sm">
+          <div class="mb-4 bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-gray-200 shadow-sm min-w-0 w-full overflow-hidden">
             <label class="block text-[11px] sm:text-xs font-extrabold text-gray-900 mb-2 flex items-center justify-between uppercase tracking-wide">
               <span class="flex items-center gap-1"><i class="fas fa-tags text-orange-500"></i> Phân loại:</span>
-              <span id="selected-variant-label" class="text-[10px] sm:text-[11px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded border border-orange-200 truncate max-w-[160px]"><%= product.variants[0].name %></span>
+              <span id="selected-variant-label" class="text-[10px] sm:text-[11px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded border border-orange-200 truncate max-w-[160px]" title="<%= product.variants[0].name %>"><%= product.variants[0].name %></span>
             </label>
-            <div class="flex sm:flex-wrap gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-0" id="variant-selector-group" style="-webkit-overflow-scrolling: touch;">
+            <div class="flex flex-wrap gap-1.5 sm:gap-2 max-w-full w-full min-w-0" id="variant-selector-group">
               <% product.variants.forEach((v, idx) => { %>
               <% const variantImg = v.image || (product.images && product.images[0]) || ''; %>
               <button 
                 type="button" 
                 onclick="selectVariant(<%= idx %>, '<%= v.name.replace(/'/g, "\\'") %>', <%= v.price %>, <%= v.original_price || product.original_price %>, '<%= v.image || '' %>')"
-                class="variant-btn flex-shrink-0 border rounded-lg sm:rounded-xl p-1.5 pr-2.5 text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer active:scale-95 <%= idx === 0 ? 'border-orange-600 bg-orange-50 text-orange-800 shadow-sm ring-1 ring-orange-400' : 'border-gray-200 bg-white text-gray-700 hover:border-orange-300' %>"
+                class="variant-btn max-w-full min-w-0 border rounded-lg sm:rounded-xl p-1.5 pr-2.5 text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer active:scale-95 <%= idx === 0 ? 'border-orange-600 bg-orange-50 text-orange-800 shadow-sm ring-1 ring-orange-400' : 'border-gray-200 bg-white text-gray-700 hover:border-orange-300' %>"
                 data-idx="<%= idx %>"
+                title="<%= v.name %>"
               >
                 <% if (variantImg) { %>
                   <img src="<%= variantImg %>" alt="<%= v.name %>" class="variant-img w-7 h-7 rounded-md sm:rounded-lg object-cover border flex-shrink-0 transition <%= idx === 0 ? 'border-orange-500 ring-1 ring-orange-300' : 'border-gray-200' %>">
                 <% } %>
-                <div class="flex flex-col text-left">
-                  <span class="leading-tight text-[11px] font-extrabold"><%= v.name %></span>
+                <div class="flex flex-col text-left min-w-0">
+                  <span class="leading-tight text-[11px] font-extrabold truncate max-w-[130px] sm:max-w-[200px]" title="<%= v.name %>"><%= v.name %></span>
                   <span class="var-price-text text-[10px] font-black <%= idx === 0 ? 'text-red-600' : 'text-gray-500' %>"><%= formatCurrency(v.price) %></span>
                 </div>
               </button>
@@ -237,7 +238,7 @@
 <div class="mobile-action-bar md:hidden fixed left-0 right-0 z-40 bg-white/95 backdrop-blur border-t border-gray-200 px-3 py-2 shadow-[0_-8px_20px_rgba(0,0,0,0.12)] flex items-center gap-2">
   <div class="flex-1 min-w-0 pr-1">
     <div class="flex items-center gap-1">
-      <span id="mobile-selected-variant" class="text-[9px] font-extrabold text-orange-600 bg-orange-50 px-1 py-0.2 rounded border border-orange-200 truncate max-w-[120px]">
+      <span id="mobile-selected-variant" class="text-[9px] font-extrabold text-orange-600 bg-orange-50 px-1 py-0.2 rounded border border-orange-200 truncate max-w-[120px]" title="<%= (product.variants && product.variants.length > 0) ? product.variants[0].name : 'Chuẩn' %>">
         <%= (product.variants && product.variants.length > 0) ? product.variants[0].name : 'Chuẩn' %>
       </span>
       <span class="text-[9px] text-gray-400">Giá:</span>
@@ -263,10 +264,16 @@
     selectedVariant = { name, price, original_price: originalPrice, image };
 
     const labelEl = document.getElementById('selected-variant-label');
-    if (labelEl) labelEl.textContent = name;
+    if (labelEl) {
+      labelEl.textContent = name;
+      labelEl.title = name;
+    }
 
     const mobileVariantEl = document.getElementById('mobile-selected-variant');
-    if (mobileVariantEl) mobileVariantEl.textContent = name;
+    if (mobileVariantEl) {
+      mobileVariantEl.textContent = name;
+      mobileVariantEl.title = name;
+    }
 
     const formattedSale = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
     const formattedOrig = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(originalPrice);
@@ -297,11 +304,11 @@
       const img = btn.querySelector('.variant-img');
       const priceText = btn.querySelector('.var-price-text');
       if (i === idx) {
-        btn.className = 'variant-btn flex-shrink-0 border rounded-lg sm:rounded-xl p-1.5 pr-2.5 text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer active:scale-95 border-orange-600 bg-orange-50 text-orange-800 shadow-sm ring-1 ring-orange-400';
+        btn.className = 'variant-btn max-w-full min-w-0 border rounded-lg sm:rounded-xl p-1.5 pr-2.5 text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer active:scale-95 border-orange-600 bg-orange-50 text-orange-800 shadow-sm ring-1 ring-orange-400';
         if (img) img.className = 'variant-img w-7 h-7 rounded-md sm:rounded-lg object-cover border flex-shrink-0 transition border-orange-500 ring-1 ring-orange-300';
         if (priceText) priceText.className = 'var-price-text text-[10px] font-black text-red-600';
       } else {
-        btn.className = 'variant-btn flex-shrink-0 border rounded-lg sm:rounded-xl p-1.5 pr-2.5 text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer active:scale-95 border-gray-200 bg-white text-gray-700 hover:border-orange-300';
+        btn.className = 'variant-btn max-w-full min-w-0 border rounded-lg sm:rounded-xl p-1.5 pr-2.5 text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer active:scale-95 border-gray-200 bg-white text-gray-700 hover:border-orange-300';
         if (img) img.className = 'variant-img w-7 h-7 rounded-md sm:rounded-lg object-cover border flex-shrink-0 transition border-gray-200';
         if (priceText) priceText.className = 'var-price-text text-[10px] font-black text-gray-500';
       }

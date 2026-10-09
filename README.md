@@ -52,11 +52,11 @@ VM Ubuntu thong thuong dung `linux/amd64`, vi vay luon build dung platform nay:
 docker login
 docker buildx build \
   --platform linux/amd64 \
-  -t sonhipp/phukienoto:v1.0.6 \
+  -t sonhipp/phukienoto:v1.0.7 \
   --push .
 ```
 
-Moi lan phat hanh, tang version image, vi du `v1.0.6`, khong nen chi dung `latest`.
+Moi lan phat hanh, tang version image, vi du `v1.0.7`, khong nen chi dung `latest`.
 
 Sau khi push image, cap nhat tag trong `docker-compose.yml`:
 
@@ -132,7 +132,7 @@ Tang image tag trong lenh build va trong `docker-compose.yml`, vi du:
 ```bash
 docker buildx build \
   --platform linux/amd64 \
-  -t sonhipp/phukienoto:v1.0.6 \
+  -t sonhipp/phukienoto:v1.0.7 \
   --push .
 ```
 
@@ -141,7 +141,7 @@ docker buildx build \
 ```bash
 git add .
 git status
-git commit -m "release v1.0.6"
+git commit -m "release v1.0.7"
 git push origin main
 ```
 
